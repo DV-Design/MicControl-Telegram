@@ -63,6 +63,8 @@ public class NativeInstance {
         instance.persistentStateFilePath = path;
         instance.audioLevelsCallback = audioLevelsCallback;
         float aspectRatio = Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) / (float) Math.max(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y);
+        // Apply the saved mode before an engine can start its capture thread.
+        setVoiceIsolationEnabled(SharedConfig.voiceIsolationEnabled);
         instance.nativePtr = makeNativeInstance(version, instance, config, path, endpoints, proxy, networkType, encryptionKey, remoteSink, videoCapturer, aspectRatio);
         return instance;
     }
@@ -77,6 +79,8 @@ public class NativeInstance {
         instance.cancelRequestBroadcastPartCallback = cancelRequestBroadcastPartCallback;
         instance.requestCurrentTimeCallback = requestCurrentTimeCallback;
         instance.isGroup = true;
+        // Group and conference calls keep Telegram's existing suppression path.
+        setVoiceIsolationEnabled(false);
         instance.nativePtr = makeGroupNativeInstance(instance, logPath, SharedConfig.disableVoiceAudioEffects, videoCapturer, screencast, noiseSupression, isConference);
         return instance;
     }
@@ -207,6 +211,7 @@ public class NativeInstance {
 
     public native void onMediaDescriptionAvailable(long taskPtr, VoIPService.RequestedParticipant[] ssrcs);
     public native void setNoiseSuppressionEnabled(boolean value);
+    public static native void setVoiceIsolationEnabled(boolean enabled);
     public native void activateVideoCapturer(long videoCapturer);
     public native void clearVideoCapturer();
     public native long addIncomingVideoOutput(int quality, String endpointId, SsrcGroup[] ssrcGroups, VideoSink remoteSink, long userId);

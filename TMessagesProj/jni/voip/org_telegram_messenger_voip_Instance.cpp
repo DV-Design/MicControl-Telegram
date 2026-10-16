@@ -23,6 +23,7 @@
 #include "tgcalls/v2/InstanceV2Impl.h"
 #include "tgcalls/v2/InstanceV2ReferenceImpl.h"
 #include "v2wasm/InstanceV2PumpImpl.h"
+#include "miccontrol/VoiceIsolationProcessor.h"
 
 #include "e2e_api.h"
 
@@ -745,6 +746,11 @@ void broadcastRequestedSinks(InstanceHolder *instance) {
         descriptions.push_back(std::move(description));
     }
     instance->groupNativeInstance->setRequestedVideoChannels(std::move(descriptions));
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_org_telegram_messenger_voip_NativeInstance_setVoiceIsolationEnabled(JNIEnv *env, jclass clazz, jboolean enabled) {
+    miccontrol::SetVoiceIsolationEnabled(enabled);
 }
 
 extern "C"

@@ -303,6 +303,7 @@ public class SharedConfig {
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
     public static boolean noiseSupression;
+    public static boolean voiceIsolationEnabled;
     public static boolean debugWebView;
     public static boolean sortContactsByName;
     public static boolean sortFilesByName;
@@ -659,6 +660,7 @@ public class SharedConfig {
             lockRecordAudioVideoHint = preferences.getInt("lockRecordAudioVideoHint", 0);
             disableVoiceAudioEffects = preferences.getBoolean("disableVoiceAudioEffects", false);
             noiseSupression = preferences.getBoolean("noiseSupression", false);
+            voiceIsolationEnabled = preferences.getBoolean("miccontrolVoiceIsolation", false);
             chatSwipeAction = preferences.getInt("ChatSwipeAction", -1);
             messageSeenHintCount = preferences.getInt("messageSeenCount", 3);
             emojiInteractionsHintCount = preferences.getInt("emojiInteractionsHintCount", 3);
@@ -1086,6 +1088,12 @@ public class SharedConfig {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("noiseSupression", noiseSupression);
         editor.apply();
+    }
+
+    public static void setVoiceIsolationEnabled(boolean enabled) {
+        voiceIsolationEnabled = enabled;
+        MessagesController.getGlobalMainSettings().edit()
+                .putBoolean("miccontrolVoiceIsolation", enabled).apply();
     }
 
     public static void toggleDebugWebView() {

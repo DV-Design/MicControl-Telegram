@@ -11535,4 +11535,9 @@
     <string name="CreateManagedBotUsernameBotLimit">This bot already has a Premium username. Remove it before adding another.</string>
     <string name="CreateManagedBotUsernameSuffixMissing">The username must end in %1$s.</string>
     <string name="CreateManagedBotUsernameCheckFailed">Couldn\'t check this username. Please try again.</string>
+    <string name="MicControlMicrophone">Microphone</string>
+    <string name="MicControlStandard">Standard</string>
+    <string name="MicControlVoiceIsolation">Voice Isolation</string>
+    <string name="MicControlMicrophoneMode">Microphone: %1$s</string>
+    <string name="MicControlVoiceIsolationInfo">Voice Isolation reduces background noise in your outgoing audio. Available in private voice and video calls.</string>
 </resources>

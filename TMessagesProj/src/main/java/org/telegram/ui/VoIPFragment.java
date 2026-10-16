@@ -182,6 +182,7 @@ public class VoIPFragment implements
     private TextView callingUserTitle;
 
     private VoIPStatusTextView statusTextView;
+    private TextView microphoneModeView;
     private ConferenceParticipantsView participantsView;
     private ImageView backIcon;
     private ImageView addIcon;
@@ -1045,6 +1046,22 @@ public class VoIPFragment implements
         ViewCompat.setImportantForAccessibility(statusTextView, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         statusLayout.addView(statusTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 0, 0, 6));
 
+        microphoneModeView = new TextView(context) {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(info);
+                info.setClassName(android.widget.Button.class.getName());
+            }
+        };
+        microphoneModeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        microphoneModeView.setTextColor(Color.WHITE);
+        microphoneModeView.setGravity(Gravity.CENTER);
+        microphoneModeView.setMinHeight(dp(44));
+        microphoneModeView.setPadding(dp(14), dp(6), dp(14), dp(6));
+        microphoneModeView.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(22), 0x26ffffff, 0x40ffffff));
+        microphoneModeView.setOnClickListener(v -> showMicrophoneModeDialog());
+        statusLayout.addView(microphoneModeView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 16, 2, 16, 6));
+
         if (state != null && state.getUser() != null && state.isConference() && state.getGroupCall() != null) {
             participantsView = new ConferenceParticipantsView(context);
             participantsView.set(currentAccount, state.getUser().id, state.getGroupParticipants(), state.getGroupCall().participants_count);
@@ -1779,6 +1796,45 @@ public class VoIPFragment implements
         }
     }
 
+    private void showMicrophoneModeDialog() {
+        final VoIPServiceState state = VoIPService.getSharedState();
+        if (activity.isFinishing() || state == null || state.isConference()) {
+            return;
+        }
+        final boolean enabled = SharedConfig.voiceIsolationEnabled;
+        new DarkAlertDialog.Builder(activity)
+                .setTitle(LocaleController.getString(R.string.MicControlMicrophone))
+                .setMessage(LocaleController.getString(R.string.MicControlVoiceIsolationInfo))
+                .setItems(new CharSequence[]{
+                        (enabled ? "" : "✓ ") + LocaleController.getString(R.string.MicControlStandard),
+                        (enabled ? "✓ " : "") + LocaleController.getString(R.string.MicControlVoiceIsolation)
+                }, (dialog, which) -> {
+                    final VoIPService service = VoIPService.getSharedInstance();
+                    if (service != null) {
+                        service.setVoiceIsolationEnabled(which == 1);
+                    } else {
+                        SharedConfig.setVoiceIsolationEnabled(which == 1);
+                    }
+                    updateMicrophoneMode();
+                })
+                .show();
+    }
+
+    private void updateMicrophoneMode() {
+        if (microphoneModeView == null) {
+            return;
+        }
+        final VoIPServiceState state = VoIPService.getSharedState();
+        final boolean show = state != null && !state.isConference()
+                && currentState != VoIPService.STATE_ENDED
+                && currentState != VoIPService.STATE_FAILED
+                && currentState != VoIPService.STATE_HANGING_UP;
+        microphoneModeView.setVisibility(show ? View.VISIBLE : View.GONE);
+        microphoneModeView.setText(LocaleController.formatString("MicControlMicrophoneMode",
+                R.string.MicControlMicrophoneMode, LocaleController.getString(SharedConfig.voiceIsolationEnabled
+                        ? R.string.MicControlVoiceIsolation : R.string.MicControlStandard)));
+    }
+
     private void updateViewState() {
         if (isFinished || switchingToPip) {
             return;
@@ -1791,6 +1847,7 @@ public class VoIPFragment implements
         int statusLayoutOffset = 0;
         final VoIPServiceState state = VoIPService.getSharedState();
         final VoIPService service = VoIPService.getSharedInstance();
+        updateMicrophoneMode();
 
         switch (currentState) {
             case VoIPService.STATE_WAITING_INCOMING:

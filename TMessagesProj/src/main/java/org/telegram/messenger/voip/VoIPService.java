@@ -1001,6 +1001,13 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 		tgVoip[CAPTURE_DEVICE_CAMERA].setNoiseSuppressionEnabled(enabled);
 	}
 
+	public void setVoiceIsolationEnabled(boolean enabled) {
+		SharedConfig.setVoiceIsolationEnabled(enabled);
+		if (groupCall == null && !isConference()) {
+			NativeInstance.setVoiceIsolationEnabled(enabled);
+		}
+	}
+
 	public void setGroupCallHash(String hash) {
 		if (!currentGroupModeStreaming || TextUtils.isEmpty(hash) || hash.equals(joinHash)) {
 			return;

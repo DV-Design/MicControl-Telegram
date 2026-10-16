@@ -1,0 +1,117 @@
+#include "VoiceIsolationDenoiser.h"
+
+#include <algorithm>
+#include <array>
+
+#include "common_audio/resampler/push_sinc_resampler.h"
+#include "rnnoise.h"
+
+namespace miccontrol {
+namespace {
+constexpr std::size_t kRnnoiseFrames = 480;
+}
+
+struct VoiceIsolationDenoiser::Channel {
+    ~Channel() {
+        if (state) {
+            rnnoise_destroy(state);
+        }
+    }
+
+    bool Reset(std::size_t source_frames) {
+        // Bundled rnnoise_init allocates GRU buffers and cannot reset a live
+        // state safely. Destroy/create releases those buffers on every toggle.
+        if (state) {
+            rnnoise_destroy(state);
+        }
+        state = rnnoise_create(nullptr);
+        if (!state) {
+            return false;
+        }
+        if (source_frames != kRnnoiseFrames) {
+            to_48k = std::make_unique<webrtc::PushSincResampler>(source_frames, kRnnoiseFrames);
+            from_48k = std::make_unique<webrtc::PushSincResampler>(kRnnoiseFrames, source_frames);
+        }
+        return true;
+    }
+
+    DenoiseState* state = nullptr;
+    std::unique_ptr<webrtc::PushSincResampler> to_48k;
+    std::unique_ptr<webrtc::PushSincResampler> from_48k;
+    std::array<float, kRnnoiseFrames> input{};
+    std::array<float, kRnnoiseFrames> output{};
+};
+
+VoiceIsolationDenoiser::VoiceIsolationDenoiser() = default;
+VoiceIsolationDenoiser::~VoiceIsolationDenoiser() = default;
+
+bool VoiceIsolationDenoiser::Initialize(int sample_rate_hz, std::size_t num_channels) {
+    channels_.clear();
+    source_frames_ = 0;
+    needs_reset_ = false;
+    // These are the internal processing rates supported by WebRTC's APM.
+    if ((sample_rate_hz != 8000 && sample_rate_hz != 16000 &&
+         sample_rate_hz != 32000 && sample_rate_hz != 48000) ||
+        num_channels == 0 || num_channels > 2 || rnnoise_get_frame_size() != kRnnoiseFrames) {
+        return false;
+    }
+    source_frames_ = static_cast<std::size_t>(sample_rate_hz / 100);
+    for (std::size_t i = 0; i < num_channels; ++i) {
+        auto channel = std::make_unique<Channel>();
+        if (!channel->Reset(source_frames_)) {
+            channels_.clear();
+            return false;
+        }
+        channels_.push_back(std::move(channel));
+    }
+    return true;
+}
+
+bool VoiceIsolationDenoiser::Process(float* const* channels, std::size_t num_channels,
+                                    std::size_t num_frames, bool enabled) {
+    if (!enabled) {
+        // Standard mode is an exact bypass. Reset on re-enable so an earlier
+        // conversation cannot leak from the RNNoise/resampler delay buffers.
+        needs_reset_ = true;
+        return false;
+    }
+    if (!channels || channels_.empty() || num_channels != channels_.size() ||
+        num_frames != source_frames_) {
+        return false;
+    }
+    for (std::size_t i = 0; i < num_channels; ++i) {
+        if (!channels[i]) {
+            return false;
+        }
+    }
+    if (needs_reset_) {
+        for (auto& channel : channels_) {
+            if (!channel->Reset(source_frames_)) {
+                return false;
+            }
+        }
+        needs_reset_ = false;
+    }
+    for (std::size_t i = 0; i < num_channels; ++i) {
+        auto& channel = *channels_[i];
+        const float* input = channels[i];
+        if (channel.to_48k) {
+            channel.to_48k->Resample(input, num_frames, channel.input.data(), kRnnoiseFrames);
+            input = channel.input.data();
+        }
+        // AudioBuffer already uses PCM16 amplitude; do not multiply by 32768.
+        // Process silence as well, allowing the filter's delayed audio to drain.
+        rnnoise_process_frame(channel.state, channel.output.data(), input);
+        if (channel.from_48k) {
+            channel.from_48k->Resample(channel.output.data(), kRnnoiseFrames, channels[i], num_frames);
+        } else {
+            std::copy(channel.output.begin(), channel.output.end(), channels[i]);
+        }
+        for (std::size_t frame = 0; frame < num_frames; ++frame) {
+            channels[i][frame] = std::max(-32768.0f, std::min(32767.0f, channels[i][frame]));
+        }
+    }
+    return true;
+}
+
+} // namespace miccontrol

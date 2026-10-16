@@ -194,6 +194,8 @@ add_library(tgcalls STATIC
         tgcalls/tgcalls/v2/SignalingTranslator.cpp
 
         voip/ReferenceCoreEmbedded.cpp
+        voip/miccontrol/VoiceIsolationDenoiser.cpp
+        voip/miccontrol/VoiceIsolationProcessor.cpp
         tgcalls/tgcalls/v2wasm/CallCoreHost.cpp
         tgcalls/tgcalls/v2wasm/CoreGzip.cpp
         tgcalls/tgcalls/v2wasm/HostCompressionService.cpp
