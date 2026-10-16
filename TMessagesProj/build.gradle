@@ -138,6 +138,14 @@ android {
         minSdkVersion 23
         targetSdkVersion 36
 
+        // Restrict native compilation as well as APK packaging to the requested ABI.
+        ndk {
+            abiFilters.addAll(rootProject.ext.miccontrolAbis)
+        }
+        buildConfigField 'int', 'MICCONTROL_API_ID', rootProject.ext.miccontrolApiId.toString()
+        buildConfigField 'String', 'MICCONTROL_API_HASH', '"' + rootProject.ext.miccontrolApiHash.replaceAll('[^a-fA-F0-9]', '') + '"'
+        buildConfigField 'boolean', 'MICCONTROL_SAMPLE_API', rootProject.ext.miccontrolSampleApi.toString()
+
         vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         multiDexEnabled true
@@ -245,7 +253,7 @@ def getProps(String propName) {
         return "";
     }
 }
-apply plugin: 'com.google.gms.google-services'
+// The development fork has no Firebase project. Do not package upstream credentials.
 
 task checkVisibility {
     doFirst {
@@ -268,3 +276,4 @@ task checkVisibility {
 }
 
 preBuild.dependsOn checkVisibility
+preBuild.dependsOn rootProject.tasks.named('validateMicControlConfiguration')

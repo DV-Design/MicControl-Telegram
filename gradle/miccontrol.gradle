@@ -1,0 +1,36 @@
+// Local configuration stays outside Git. Environment variables take precedence.
+def localConfig = new Properties()
+def localConfigFile = rootProject.file('local.properties')
+if (localConfigFile.exists()) {
+    localConfigFile.withInputStream { localConfig.load(it) }
+}
+def configValue = { String name, String fallback = '' ->
+    System.getenv(name) ?: providers.gradleProperty(name).orNull ?: localConfig.getProperty(name, fallback)
+}
+
+def requestedApiId = configValue('TELEGRAM_API_ID').trim()
+def requestedApiHash = configValue('TELEGRAM_API_HASH').trim()
+def allowSampleApi = configValue('MICCONTROL_ALLOW_SAMPLE_API', 'false').toBoolean()
+def usingSampleApi = requestedApiId.isEmpty() && requestedApiHash.isEmpty() && allowSampleApi
+
+ext.miccontrolApiId = requestedApiId ==~ /[1-9][0-9]{0,8}/ ? requestedApiId.toInteger() : (usingSampleApi ? 4 : 0)
+ext.miccontrolApiHash = usingSampleApi ? '014b35b6184100b085b0d0572f9b5103' : requestedApiHash
+ext.miccontrolSampleApi = usingSampleApi
+ext.miccontrolAbis = configValue('MICCONTROL_ABIS', 'arm64-v8a').split(',').collect { it.trim() }
+
+tasks.register('validateMicControlConfiguration') {
+    doLast {
+        if (rootProject.ext.miccontrolApiId <= 0 || !(rootProject.ext.miccontrolApiHash ==~ /[a-fA-F0-9]{32}/)) {
+            throw new GradleException('Set TELEGRAM_API_ID and TELEGRAM_API_HASH in local.properties or the environment. For a development test only, explicitly set MICCONTROL_ALLOW_SAMPLE_API=true. See README_MICCONTROL_RU.md.')
+        }
+        if (rootProject.ext.miccontrolApiId == 4 && !allowSampleApi) {
+            throw new GradleException('The upstream sample API requires MICCONTROL_ALLOW_SAMPLE_API=true. Obtain your own API credentials before distributing MicControl.')
+        }
+        if (rootProject.ext.miccontrolSampleApi || rootProject.ext.miccontrolApiId == 4) {
+            logger.warn('MicControl DEVELOPMENT TEST build: using the limited public upstream sample API; login may be restricted. Use your own Telegram API credentials before distribution.')
+        }
+        if (!rootProject.ext.miccontrolAbis.every { it in ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'] }) {
+            throw new GradleException('MICCONTROL_ABIS contains an unsupported Android ABI.')
+        }
+    }
+}

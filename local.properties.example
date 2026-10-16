@@ -1,0 +1,11 @@
+# Copy to local.properties, which is ignored by Git.
+# Use the real SDK path on your machine.
+sdk.dir=/Users/your-user/Library/Android/sdk
+
+# Obtain both values from https://my.telegram.org/apps.
+# Leave them out of Git and avoid sharing local.properties/build logs with secrets.
+TELEGRAM_API_ID=
+TELEGRAM_API_HASH=
+
+# Only a development test may explicitly use the public upstream sample API:
+# MICCONTROL_ALLOW_SAMPLE_API=true
