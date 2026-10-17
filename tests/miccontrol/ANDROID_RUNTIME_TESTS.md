@@ -139,3 +139,28 @@ Run this class alone with:
   -e class org.miccontrol.test.MicControlLoginErrorsTest \
   org.miccontrol.messenger.web.test/androidx.test.runner.AndroidJUnitRunner
 ```
+
+## Test-account authentication: blocked before messaging
+
+The dev2 UI reached a real test-server code screen after correctly handling
+`PHONE_MIGRATE_2`, with phone/call-log permissions denied. The documented code
+for the reserved DC2 test number was rejected as `PHONE_CODE_INVALID`, both
+with bulk accessibility entry and ordinary Android keyboard events.
+
+An independent **Telethon 1.45.0** probe reproduced the rejection on TestDC2
+and a separate reserved TestDC1 number. Both endpoints returned
+`Config.test_mode=true` and `SentCodeTypeSms(length=5)`. Each rejected its
+documented five-digit code and the six-digit fallback described in
+[Telethon's test-server documentation](https://docs.telethon.dev/en/stable/developing/test-servers.html).
+The probes used the same public sample API, fresh in-memory sessions and one
+send-code request per number; no session/auth key was saved and no signup was
+performed. This establishes an independent rejection, not its server-side cause
+or a demonstrated restriction affecting every API/account.
+
+Local evidence: `artifacts/qa/dev2-test-auth-errors.txt`,
+`telethon-reference-probe.log`, `telethon-reference-probe-dc1.log`, and the two
+matching reference scripts. Messaging, file transfer, search and authenticated
+session persistence remain **unverified** until an authorized test account is
+available. No personal number or real-account confirmation code was used in
+these probes. The sixteen-case automated PASS above remains valid within its
+documented scope.
