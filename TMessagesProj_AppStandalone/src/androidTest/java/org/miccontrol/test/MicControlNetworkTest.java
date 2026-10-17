@@ -7,7 +7,6 @@ import static org.junit.Assume.assumeTrue;
 
 import android.util.Log;
 
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -18,7 +17,6 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.UserConfig;
-import org.telegram.ui.LaunchActivity;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +33,9 @@ public class MicControlNetworkTest {
         MicControlRuntimeTest.initializeApplication();
         MicControlRuntimeTest.assumeNoActivatedAccount();
 
-        try (ActivityScenario<LaunchActivity> ignored = ActivityScenario.launch(LaunchActivity.class)) {
+        try (TestActivitySession session = TestActivitySession.launch()) {
+            session.onActivity(activity -> assertTrue("activity content hidden",
+                    activity.findViewById(android.R.id.content).isShown()));
             ConnectionsManager manager = ConnectionsManager.getInstance(UserConfig.selectedAccount);
             CountDownLatch completed = new CountDownLatch(1);
             AtomicReference<TLObject> result = new AtomicReference<>();

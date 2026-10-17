@@ -18,8 +18,6 @@ import android.content.pm.ServiceInfo;
 import android.content.res.XmlResourceParser;
 import android.view.View;
 
-import androidx.lifecycle.Lifecycle;
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -52,8 +50,7 @@ public class MicControlRuntimeTest {
 
     @BeforeClass
     public static void initializeApplication() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                ApplicationLoader::postInitApplication);
+        TestActivitySession.onMain("application initialization", ApplicationLoader::postInitApplication);
     }
 
     @Test
@@ -96,15 +93,12 @@ public class MicControlRuntimeTest {
     @Test
     public void unauthenticatedLandingSurvivesBackgroundAndRecreation() {
         assumeNoActivatedAccount();
-        try (ActivityScenario<LaunchActivity> scenario = ActivityScenario.launch(LaunchActivity.class)) {
-            assertEquals(Lifecycle.State.RESUMED, scenario.getState());
-            scenario.onActivity(MicControlRuntimeTest::assertLandingVisible);
-            scenario.moveToState(Lifecycle.State.CREATED);
-            scenario.moveToState(Lifecycle.State.RESUMED);
-            scenario.onActivity(MicControlRuntimeTest::assertLandingVisible);
-            scenario.recreate();
-            assertEquals(Lifecycle.State.RESUMED, scenario.getState());
-            scenario.onActivity(MicControlRuntimeTest::assertLandingVisible);
+        try (TestActivitySession session = TestActivitySession.launch()) {
+            session.onActivity(MicControlRuntimeTest::assertLandingVisible);
+            session.backgroundAndResume();
+            session.onActivity(MicControlRuntimeTest::assertLandingVisible);
+            session.recreate();
+            session.onActivity(MicControlRuntimeTest::assertLandingVisible);
         }
     }
 
@@ -230,6 +224,7 @@ public class MicControlRuntimeTest {
         View content = activity.findViewById(android.R.id.content);
         assertNotNull("activity content missing", content);
         assertTrue("activity content detached", content.isAttachedToWindow());
+        assertTrue("activity content hidden", content.isShown());
         assertNotNull("navigation layout missing", activity.getActionBarLayout());
         Object fragment = activity.getActionBarLayout().getLastFragment();
         assertTrue("expected intro or saved login, got " + fragment,
