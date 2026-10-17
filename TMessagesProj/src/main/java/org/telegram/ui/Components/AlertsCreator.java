@@ -286,7 +286,8 @@ public class AlertsCreator {
     }
 
     public static Dialog processError(int currentAccount, TLRPC.TL_error error, BaseFragment fragment, TLObject request, Object... args) {
-        if (error == null || error.code == 406 || error.text == null) {
+        if (error == null || error.text == null ||
+                error.code == 406 && !(request instanceof TLRPC.TL_auth_sendCode)) {
             return null;
         }
         if ("BALANCE_TOO_LOW".equalsIgnoreCase(error.text)) {
@@ -549,7 +550,7 @@ public class AlertsCreator {
             } else {
                 return showSimpleAlert(fragment, error.text);
             }
-        } else if (request instanceof TLRPC.TL_auth_resendCode) {
+        } else if (request instanceof TLRPC.TL_auth_resendCode || request instanceof TLRPC.TL_auth_sendCode) {
             if (error.text.contains("PHONE_NUMBER_INVALID")) {
                 return showSimpleAlert(fragment, LocaleController.getString(R.string.InvalidPhoneNumber));
             } else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {

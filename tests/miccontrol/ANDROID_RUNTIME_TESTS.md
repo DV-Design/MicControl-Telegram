@@ -1,8 +1,8 @@
 # Android runtime tests
 
-## Current status: eight runtime cases passed
+## Current status: sixteen runtime cases passed
 
-On 2026-10-17 the resumed run passed **all eight cases in 6.594 seconds** on
+On 2026-10-17 the resumed dev1 run passed **all eight cases in 6.594 seconds** on
 Android 16 arm64 with 16 KiB pages, four emulator cores and 4 GiB RAM. The
 network case was explicitly enabled and returned a real production
 `help.getConfig`: DC 2, `test_mode=false`, 19 datacenter endpoints. There were
@@ -14,6 +14,13 @@ lifecycle case waited indefinitely for an idle UI queue while the upstream
 Intro continuously invalidated its animated view. The bounded test helper
 described below removes that harness dependency; app code and the candidate
 APK were unchanged for this passing run.
+
+The updated **dev2** app and matching test APK subsequently passed **all sixteen
+cases in 20.155 seconds**, including the eight login-error regressions below.
+There were zero failures and zero skipped cases. After a clean app-data reset
+on the isolated emulator, the network probe again returned production DC 2,
+`test_mode=false`, and 19 endpoints. Evidence:
+`artifacts/qa/dev2-all-tests-green.txt` and its matching logcat file.
 
 The earlier first-boot run also recorded a startup ANR while loading DEX under
 CPU contention with two emulator cores and 3 GiB RAM. Repeating normal launch
@@ -107,3 +114,28 @@ server rejection with the argument enabled is a failure and must be reported.
 These checks do not establish production login, message/media delivery,
 background push, calls, Bluetooth routing, or sound quality on vivo/AirPods.
 Those require separate tests with the relevant accounts and hardware.
+
+## Login error regressions
+
+Before the fix, the original dev1 app failed five of these eight cases while
+all three controls passed. After the fix, every case passed in the combined
+sixteen-case dev2 run. The baseline failure log is
+`artifacts/qa/login-errors-regression-real-codes-red.txt`.
+
+`MicControlLoginErrorsTest` adds eight local cases using the actual
+`AlertsCreator.processError`, a real `LoginActivity` attached to the resumed
+activity, and actual displayed dialog text. The fixtures cover
+`API_ID_PUBLISHED_FLOOD` / `API_ID_INVALID` (400), `UPDATE_APP_TO_LOGIN` (406),
+`AUTH_RESTART` (500), an unknown send-code error, and three controls: existing
+resend errors remain visible, unrelated 406 responses remain silent, and
+cancelled requests (-1000) remain silent. Dialogs and activity state are cleaned
+up after each case. The test constructs request objects but never submits a
+login request or asks Telegram to deliver a code.
+
+Run this class alone with:
+
+```bash
+"$ANDROID_HOME/platform-tools/adb" shell am instrument -w -r \
+  -e class org.miccontrol.test.MicControlLoginErrorsTest \
+  org.miccontrol.messenger.web.test/androidx.test.runner.AndroidJUnitRunner
+```

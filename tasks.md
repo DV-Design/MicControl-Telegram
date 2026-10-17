@@ -16,7 +16,8 @@
   → Artifacts: [жизненный цикл RNNoise](TMessagesProj/jni/voip/miccontrol/VoiceIsolationDenoiser.cpp), [native-тесты](tests/miccontrol/voice_isolation_test.cpp).
 - [ ] `miccontrol-usj` — **in_progress**: тесты возобновлены по просьбе пользователя. Все восемь runtime-проверок прошли (6,594 с), включая реальный production MTProto-запрос; продолжается проверка входа и чатов в тестовой среде Telegram.
   → Artifacts: [Android-тесты](TMessagesProj_AppStandalone/src/androidTest/java/org/miccontrol/test), [запуск тестов](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
-- [ ] `miccontrol-6kp` — **in_progress**: воспроизвести и исправить скрытые ошибки `auth.sendCode`, из-за которых кнопка «Далее» может выглядеть неработающей.
+- [x] `miccontrol-6kp` — **completed**: исправлены скрытые ошибки `auth.sendCode`, включая HTTP/RPC-код 406; воспроизведены пять падений на dev1, все 16 проверок прошли на dev2. Отмена и обработка посторонних запросов сохранены.
+  → Artifacts: [обработка ошибок](TMessagesProj/src/main/java/org/telegram/ui/Components/AlertsCreator.java), [регрессионные тесты](TMessagesProj_AppStandalone/src/androidTest/java/org/miccontrol/test/MicControlLoginErrorsTest.java), [инструкция входа](README_MICCONTROL_RU.md).
 - [ ] `miccontrol-b4y` — **open**: отправить исходники в `DV-Design/MicControl-Telegram`; URL получен, но GitHub API возвращает 404 и Git-доступ отсутствует. Успешный push пока не выполнен.
 - [ ] `miccontrol-6w0` — **open**: проверить личные звонки на vivo X200 Ultra с AirPods 3.
 - [ ] `miccontrol-7vi` — **open**: настроить собственные API credentials, Firebase при необходимости и release-подпись перед повседневным использованием/распространением.
