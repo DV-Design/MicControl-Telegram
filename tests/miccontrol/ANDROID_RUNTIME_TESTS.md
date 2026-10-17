@@ -1,6 +1,46 @@
 # Android runtime tests
 
-## Current status: sixteen runtime cases passed
+## Current status: production login blocked by the sample API
+
+The user's 2026-10-17 dev2 screenshot shows the real production
+`auth.sendCode` error **`API_ID_PUBLISHED_FLOOD`**. This is now direct evidence
+of the rejection on the user's device. The APK deliberately used the public
+upstream sample API ID 4; [Telegram documents](https://core.telegram.org/api/obtaining_api_id)
+that this sample is server-limited and unsuitable for end-user applications.
+The own `TELEGRAM_API_ID` and `TELEGRAM_API_HASH` needed for a corrected build
+are absent. Repeating the same sample-API login does not address this failure.
+
+The sixteen passing checks below remain valid for their stated scope; **they
+are not a successful-login or messaging result**. No working-client claim is
+made for dev1/dev2.
+
+The manual GitHub build for the next dev3 candidate now requires own API
+credentials and the existing private signing key. Its preflight rejects the
+sample ID/hash and validates the original signing certificate before SDK,
+submodules or native compilation. Actionlint/ShellCheck, Bash/Python syntax,
+eleven negative input cases and a format-only positive private-key restoration
+check passed. Main-agent review independently repeated six relevant cases and
+verified exact restored bytes, mode 0600 and the untouched original local key.
+Those are configuration/signing checks, not Telegram authentication results.
+The default Gradle configuration also rejected missing own API values in six
+seconds; raw evidence is `artifacts/qa/own-api-missing-preflight.txt`.
+
+## Required functional acceptance after replacing the credentials
+
+Use the same package and signing certificate so the user can upgrade. First
+verify that the candidate contains the intended non-sample API configuration,
+then attempt one login on a dedicated authorized test account. Record the
+actual server response. If authentication fails, stop the messaging scenario
+and report that failure rather than replacing it with a connectivity result.
+
+After successful authentication, send and receive a uniquely identified text
+message, upload/download a small file and compare SHA-256, find the test message
+through search, and restart the app to verify the same account/session and
+message history remain available. Record candidate APK hash, environment and
+each result. Calls and Bluetooth audio need a separate peer and the actual
+vivo/AirPods hardware. None of these authenticated scenarios has passed yet.
+
+## Previous scoped result: sixteen runtime cases passed
 
 On 2026-10-17 the resumed dev1 run passed **all eight cases in 6.594 seconds** on
 Android 16 arm64 with 16 KiB pages, four emulator cores and 4 GiB RAM. The

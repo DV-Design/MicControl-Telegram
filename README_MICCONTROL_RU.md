@@ -40,15 +40,16 @@ sdkmanager --sdk_root="$ANDROID_HOME" \
 
 Получите `api_id` и `api_hash` через [API development tools](https://my.telegram.org/apps), как описано в [документации Telegram](https://core.telegram.org/api/obtaining_api_id).
 
+Для сборки **dev3 в GitHub Actions**:
+
+1. Откройте [my.telegram.org/apps](https://my.telegram.org/apps), создайте API application и сохраните выданные `api_id` и `api_hash`.
+2. В [репозитории MicControl](https://github.com/DV-Design/MicControl-Telegram) откройте **Settings → Secrets and variables → Actions → New repository secret**. Добавьте `TELEGRAM_API_ID` и `TELEGRAM_API_HASH`. Затем в **Actions → Build MicControl APK with own API → Run workflow** выберите ветку `main` и запустите сборку.
+
+Существующий ключ подписи хранится отдельно в `MICCONTROL_DEBUG_KEYSTORE_B64`; workflow проверяет его fingerprint для установки поверх прежнего MicControl. После успешной сборки скачайте artifact `MicControl-arm64-<номер запуска>`: внутри только APK и SHA-256. Отсутствующие/некорректные secrets и публичный sample API останавливают workflow до загрузки submodules, SDK и native-сборки. Сборка проверяет формат API credentials и подпись; успешный вход, сообщения и звонки проверяются отдельно на телефоне. Пока собственные API credentials не добавлены, облачная сборка пройти не может.
+
 Создайте в корне **`local.properties`** по примеру [local.properties.example](local.properties.example). Укажите свой `sdk.dir`, `TELEGRAM_API_ID` и `TELEGRAM_API_HASH`. Файл исключён из Git. Альтернативный способ — передать переменные окружения `TELEGRAM_API_ID` и `TELEGRAM_API_HASH`; окружение имеет приоритет.
 
-Без своих credentials обычная сборка остановится с объяснением. Для первого тестового APK разрешён **явный** запуск с публичными sample-credentials upstream:
-
-```bash
-./scripts/build-apk.sh --allow-sample-api
-```
-
-Это developer sample API, а не собственные credentials MicControl. Telegram ограничивает его на сервере; вход может завершиться `API_ID_PUBLISHED_FLOOD`. Перед передачей приложения конечным пользователям нужны собственные `api_id`/`api_hash`. Значения попадают в APK, поэтому `api_hash` нельзя считать секретом, надёжно скрытым внутри приложения.
+Ранние APK dev1/dev2 собраны с публичным sample API upstream. На production-сервере подтверждён отказ `API_ID_PUBLISHED_FLOOD`; для следующей сборки нужны собственные credentials. CI запрещает sample API и не делает попыток входа. Значения API попадают в APK, поэтому `api_hash` нельзя считать секретом, надёжно скрытым внутри приложения.
 
 ## Сборка APK
 
@@ -59,7 +60,7 @@ git submodule update --init --recursive --depth=1
 ./scripts/build-apk.sh
 ```
 
-При отсутствии собственных API credentials используйте явно указанный выше `--allow-sample-api`. Скрипт создаёт `.local/miccontrol-debug.keystore`, собирает только **arm64-v8a** с двумя Gradle workers и heap 4 GB, проверяет подпись и сохраняет:
+Для локальной сборки укажите собственные API credentials. Скрипт создаёт `.local/miccontrol-debug.keystore`, собирает только **arm64-v8a** с двумя Gradle workers и heap 4 GB, проверяет подпись и сохраняет:
 
 - `artifacts/MicControl-arm64-dev.apk`
 - `artifacts/MicControl-arm64-dev.apk.sha256`
@@ -75,7 +76,7 @@ export MICCONTROL_ABIS=arm64-v8a
   '-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g'
 ```
 
-При необходимости sample API также явно задайте `MICCONTROL_ALLOW_SAMPLE_API=true` в окружении. `.local/`, `local.properties`, `artifacts/` и файлы APK исключены из Git. Upstream dummy `release.keystore` не используется для debug APK; release/публикация требуют отдельной настройки production-подписи.
+`.local/`, `local.properties`, `artifacts/` и файлы APK исключены из Git. Upstream dummy `release.keystore` не используется для debug APK; release/публикация требуют отдельной настройки production-подписи.
 
 ## Native-тесты
 
@@ -106,7 +107,7 @@ python3 tests/miccontrol/run_native_tests.py --sanitize
 
 Экран «Проверьте сообщения в Telegram» означает, что сервер выбрал доставку кода в служебный чат Telegram на уже авторизованных устройствах. Способ доставки выбирает сервер; приложение не может гарантировать переключение на SMS. См. [описание авторизации Telegram](https://core.telegram.org/api/auth).
 
-В dev2 исправлена скрытая обработка ошибок запроса кода: отказ сервера теперь показывается диалогом. Например, `API_ID_PUBLISHED_FLOOD` означает ограничение публичного sample API; для такой ошибки нужна сборка со своими API credentials, а не включение тестового сервера. Подтверждение этого отказа для конкретного аккаунта требует фактического ответа сервера.
+В dev2 исправлена скрытая обработка ошибок запроса кода: отказ сервера теперь показывается диалогом. `API_ID_PUBLISHED_FLOOD` уже подтверждён при проверке dev2 в production; для такой ошибки нужна сборка со своими API credentials. Тестовый сервер не исправляет ограничение sample API.
 
 ## Выбор обработки микрофона
 

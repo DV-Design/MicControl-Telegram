@@ -37,8 +37,13 @@ off manually for personal login; restarting the app retains the selection.
 
 The screenshot's code-via-Telegram screen follows a server
 `auth.sentCodeTypeApp` response. The mapping and resend protocol were unchanged.
-The actual production RPC response for the user's number was not observed,
-so no particular API rejection is claimed for that account.
+At the time of that run the production RPC response was not observed.
+The user's subsequent 2026-10-17 dev2 screenshot now confirms
+`API_ID_PUBLISHED_FLOOD` on the personal-login path. This matches Telegram's
+documented server restriction for the public sample API ID embedded in dev2.
+An APK with the user's own API credentials and actual authenticated functional
+checks is still required; making the rejection visible did not fix the API
+configuration or establish a successful login.
 [Primary authorization reference](https://core.telegram.org/api/auth).
 
 ## Independent validation
@@ -84,6 +89,9 @@ before login. Details and local evidence paths are recorded in
 `tests/miccontrol/ANDROID_RUNTIME_TESTS.md`. The dev2 runtime run produced no
 application crash or ANR; capture files are preserved in `artifacts/qa/`.
 
-Source commits are saved locally. Publication to the user's GitHub repository
-is still blocked by repository access and absent Git authentication
-(`miccontrol-b4y`); no successful push is claimed.
+GitHub authentication was subsequently completed as DV-Design and all source
+changes were successfully pushed to `DV-Design/MicControl-Telegram`, `main`,
+at `8ea0d62`. The user's initial commit was preserved, and the final source
+tree was verified identical after importing the shallow upstream snapshot.
+The historical local source hash above was rewritten during this unpublished
+history import. No private key, local API configuration or APK was committed.
