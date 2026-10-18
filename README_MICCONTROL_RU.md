@@ -4,6 +4,16 @@
 
 Имя приложения — **MicControl**, Android application ID — **`org.miccontrol.messenger.web`**. У приложения своя иконка микрофона, тип системного аккаунта и локальная подпись. Его можно установить рядом с официальным клиентом. Аккаунт Telegram нужно добавить в MicControl отдельно.
 
+## Текущий APK: dev3
+
+[Скачать MicControl dev3 — APK и SHA-256](https://github.com/DV-Design/MicControl-Telegram/releases/tag/miccontrol-dev3). Это prerelease в **приватном репозитории**: войдите в GitHub под аккаунтом с доступом к нему.
+
+Версия `13.0.2-miccontrol-dev3` / code `71779`, Android 6+ (`minSdk 23`, `targetSdk 36`), arm64; размер APK — 65 652 128 байт. SHA-256: `a4340f91518cabe3e8367965413784953676412c4823affd0511fd49337a8b70`.
+
+Dev3 собран со своими API credentials в [успешном GitHub Actions run](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39156162098). Проверены подпись, установка поверх прежнего APK, запуск на Android 16 arm64 и один MTProto network-тест на тестовом сервере. Вход с резервным тестовым номером остановлен на `PHONE_CODE_INVALID`; результат повторился в независимом клиенте. Личный production-вход, сообщения и звонки не подтверждены; полного повторного запуска 16 тестов на dev3 не было.
+
+Установите dev3 поверх dev2: пакет и ключ подписи сохранены. Для личного аккаунта **выключите «Test Backend» / «Тестовый сервер»** на экране номера: настройка может сохраниться после обновления.
+
 ## Что нужно для сборки
 
 | Компонент | Версия |
@@ -45,11 +55,11 @@ sdkmanager --sdk_root="$ANDROID_HOME" \
 1. Откройте [my.telegram.org/apps](https://my.telegram.org/apps), создайте API application и сохраните выданные `api_id` и `api_hash`.
 2. В [репозитории MicControl](https://github.com/DV-Design/MicControl-Telegram) откройте **Settings → Secrets and variables → Actions → New repository secret**. Добавьте `TELEGRAM_API_ID` и `TELEGRAM_API_HASH`. Затем в **Actions → Build MicControl APK with own API → Run workflow** выберите ветку `main` и запустите сборку.
 
-Существующий ключ подписи хранится отдельно в `MICCONTROL_DEBUG_KEYSTORE_B64`; workflow проверяет его fingerprint для установки поверх прежнего MicControl. После успешной сборки скачайте artifact `MicControl-arm64-<номер запуска>`: внутри только APK и SHA-256. Отсутствующие/некорректные secrets и публичный sample API останавливают workflow до загрузки submodules, SDK и native-сборки. Сборка проверяет формат API credentials и подпись; успешный вход, сообщения и звонки проверяются отдельно на телефоне. Пока собственные API credentials не добавлены, облачная сборка пройти не может.
+Собственные API secrets уже настроены; dev3 успешно собран 18 октября 2026 года, artifact — `MicControl-arm64-3`. Существующий ключ подписи хранится отдельно в `MICCONTROL_DEBUG_KEYSTORE_B64`; workflow проверяет его fingerprint для установки поверх прежнего MicControl. В artifact входят только APK и SHA-256. Отсутствующие/некорректные secrets и публичный sample API по-прежнему останавливают workflow до загрузки submodules, SDK и native-сборки. Проверка формата credentials и успешная сборка не подтверждают вход в Telegram.
 
 Создайте в корне **`local.properties`** по примеру [local.properties.example](local.properties.example). Укажите свой `sdk.dir`, `TELEGRAM_API_ID` и `TELEGRAM_API_HASH`. Файл исключён из Git. Альтернативный способ — передать переменные окружения `TELEGRAM_API_ID` и `TELEGRAM_API_HASH`; окружение имеет приоритет.
 
-Ранние APK dev1/dev2 собраны с публичным sample API upstream. На production-сервере подтверждён отказ `API_ID_PUBLISHED_FLOOD`; для следующей сборки нужны собственные credentials. CI запрещает sample API и не делает попыток входа. Значения API попадают в APK, поэтому `api_hash` нельзя считать секретом, надёжно скрытым внутри приложения.
+Ранние APK dev1/dev2 собраны с публичным sample API upstream. На production-сервере подтверждён отказ `API_ID_PUBLISHED_FLOOD`; dev3 использует собственную конфигурацию без sample API. CI запрещает sample API и не делает попыток входа. Значения API попадают в APK, поэтому `api_hash` нельзя считать секретом, надёжно скрытым внутри приложения.
 
 ## Сборка APK
 
@@ -96,7 +106,7 @@ python3 tests/miccontrol/run_native_tests.py --sanitize
 
 ```bash
 "$ANDROID_HOME/platform-tools/adb" devices
-"$ANDROID_HOME/platform-tools/adb" install -r artifacts/MicControl-arm64-dev.apk
+"$ANDROID_HOME/platform-tools/adb" install -r artifacts/MicControl-arm64-dev3.apk
 ```
 
 Либо перенесите APK на телефон, откройте его в файловом менеджере и разрешите установку этому файловому менеджеру. После запуска разрешите доступ к микрофону и уведомлениям, затем добавьте аккаунт Telegram. Если код приходит в официальный Telegram, введите его вручную в MicControl.

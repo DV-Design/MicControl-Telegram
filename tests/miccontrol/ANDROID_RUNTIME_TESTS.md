@@ -1,37 +1,56 @@
 # Android runtime tests
 
-## Current status: production login blocked by the sample API
+## Current status: dev3 built with own API; test-account authentication blocked
 
-The user's 2026-10-17 dev2 screenshot shows the real production
-`auth.sendCode` error **`API_ID_PUBLISHED_FLOOD`**. This is now direct evidence
-of the rejection on the user's device. The APK deliberately used the public
-upstream sample API ID 4; [Telegram documents](https://core.telegram.org/api/obtaining_api_id)
-that this sample is server-limited and unsuitable for end-user applications.
-The own `TELEGRAM_API_ID` and `TELEGRAM_API_HASH` needed for a corrected build
-are absent. Repeating the same sample-API login does not address this failure.
+On 2026-10-18 the own API secrets were supplied. The first run passed preflight
+but failed because `sdkmanager` was unavailable (exit 127). Explicit SDK setup
+was added in `35483bd`; [run 39156162098](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39156162098)
+then succeeded with 300 Gradle tasks in 29m 13s and produced
+`MicControl-arm64-3`.
 
-The sixteen passing checks below remain valid for their stated scope; **they
-are not a successful-login or messaging result**. No working-client claim is
-made for dev1/dev2.
+The downloadable candidate is the [private dev3 prerelease](https://github.com/DV-Design/MicControl-Telegram/releases/tag/miccontrol-dev3).
+GitHub sign-in with repository access is required. Local APK:
+`artifacts/MicControl-arm64-dev3.apk`, 65,652,128 bytes, SHA-256
+`a4340f91518cabe3e8367965413784953676412c4823affd0511fd49337a8b70`.
+The release download independently matched that hash.
 
-The manual GitHub build for the next dev3 candidate now requires own API
-credentials and the existing private signing key. Its preflight rejects the
-sample ID/hash and validates the original signing certificate before SDK,
-submodules or native compilation. Actionlint/ShellCheck, Bash/Python syntax,
-eleven negative input cases and a format-only positive private-key restoration
-check passed. Main-agent review independently repeated six relevant cases and
-verified exact restored bytes, mode 0600 and the untouched original local key.
-Those are configuration/signing checks, not Telegram authentication results.
-The default Gradle configuration also rejected missing own API values in six
-seconds; raw evidence is `artifacts/qa/own-api-missing-preflight.txt`.
+| Check on this dev3 candidate | Result / scope |
+|---|---|
+| Package / version | `org.miccontrol.messenger.web`, `13.0.2-miccontrol-dev3`, code `71779`, min 23 / target 36 |
+| Configuration inspection | `sampleFlag=false`, `apiIdIsSample=false`, `hashFormatValid=true`; no API secrets recorded |
+| APK integrity / signing | SHA-256 matched; v1/v2 verified; existing certificate `59e104c1d8b66e20c47119aed387993df655475cdd3153fb21bfb3752d85debe`; both native ELF LOAD alignments at least 16 KiB |
+| Upgrade / cold launch | Update install succeeded; 2,620 ms launch on API 36 arm64, 16 KiB pages, four cores, 4 GiB RAM, host GPU |
+| MTProto network case | Exactly **one** `MicControlNetworkTest` passed in 1.817s: DC 1, `test_mode=true`, nine endpoints |
+| Test-account authentication | **BLOCKED** at `PHONE_CODE_INVALID`; UI and an independent client both rejected the documented test code |
+| Personal production login / messaging / calls | Unverified; no personal number or real-account code was used, and authenticated scenarios were not reached |
 
-## Required functional acceptance after replacing the credentials
+Evidence: `artifacts/qa/dev3-auth/candidate.json`, `07-networkcase.txt` and
+`07-config-test-mode.log` in the same directory. The network result covers the
+test server; it is not a production-login result. **The full sixteen-case
+suite was not rerun on dev3.** Its historical dev2 result is preserved below.
 
-Use the same package and signing certificate so the user can upgrade. First
-verify that the candidate contains the intended non-sample API configuration,
-then attempt one login on a dedicated authorized test account. Record the
-actual server response. If authentication fails, stop the messaging scenario
-and report that failure rather than replacing it with a connectivity result.
+Dev3 retains the package and signing identity for upgrade installation. For a
+personal production account, turn **Test Backend OFF** on the phone-number
+screen; that choice persists across updates.
+
+## Dev3 authentication blocker and remaining acceptance
+
+The UI successfully completed `auth.sendCode`, handled `PHONE_MIGRATE_2`, and
+displayed a five-digit SMS-code screen on TestDC2. Entering the documented
+reserved-account code `22222` returned `PHONE_CODE_INVALID`.
+
+An independent Telethon 1.45.0 probe used the same own API configuration, a
+fresh in-memory session and pinned TestDC2 on port 80. It confirmed
+`test_mode=true` and `SentCodeTypeSms(length=5)`, then received
+`PhoneCodeInvalidError` for both `22222` and the documented six-digit test
+fallback `222222`. This reproduces the rejection independently; its server-side
+cause is not established. Tests stopped without signup or messaging.
+
+Evidence in `artifacts/qa/dev3-auth/`: `17-after-permissions.json`,
+`19-rpc-names.json`, `19-code-result.png`, `19-code-result.json`, and
+`20-reference.log`. The verified removal of API ID 4 does not establish that
+production login now succeeds. The user's personal production retest has no
+reported result yet.
 
 After successful authentication, send and receive a uniquely identified text
 message, upload/download a small file and compare SHA-256, find the test message
@@ -40,7 +59,13 @@ message history remain available. Record candidate APK hash, environment and
 each result. Calls and Bluetooth audio need a separate peer and the actual
 vivo/AirPods hardware. None of these authenticated scenarios has passed yet.
 
-## Previous scoped result: sixteen runtime cases passed
+## Historical dev1/dev2 results: sample API rejection and sixteen-case PASS
+
+The user's 2026-10-17 dev2 screenshot showed the real production `auth.sendCode`
+error **`API_ID_PUBLISHED_FLOOD`**. Dev1/dev2 deliberately used upstream sample
+API ID 4; [Telegram documents](https://core.telegram.org/api/obtaining_api_id)
+its server restrictions. That rejection motivated the own-API dev3 build;
+repeating sample-API requests does not address it.
 
 On 2026-10-17 the resumed dev1 run passed **all eight cases in 6.594 seconds** on
 Android 16 arm64 with 16 KiB pages, four emulator cores and 4 GiB RAM. The
@@ -95,10 +120,13 @@ Primary implementation references:
 
 ## Reproduction
 
-These tests instrument **TMessagesProj_AppStandalone / AfatDebug**, the same
-`org.miccontrol.messenger.web` candidate as `artifacts/MicControl-arm64-dev.apk`.
-They use the local development signing key. The separate upstream `AppTests`
-application has a different signing setup and must not replace this candidate.
+These tests instrument **TMessagesProj_AppStandalone / AfatDebug**, package
+`org.miccontrol.messenger.web`. The current downloaded candidate is
+`artifacts/MicControl-arm64-dev3.apk`; local builds below write
+`TMessagesProj_AppStandalone/build/outputs/apk/afat/debug/app.apk`. Use the
+matching test APK and existing development signing key. The separate upstream
+`AppTests` application has a different signing setup and must not replace this
+candidate.
 
 Use a dedicated Android emulator without personal accounts. The APK currently
 contains only `arm64-v8a`; an ARM64 Android 16 / API 36 image with 16 KiB pages
@@ -111,8 +139,8 @@ After creating the local key with `scripts/build-apk.sh`, build both APKs:
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 export ANDROID_HOME="$HOME/Library/Android/sdk"
 export MICCONTROL_ABIS=arm64-v8a
-# Only if using the deliberately limited upstream sample API:
-export MICCONTROL_ALLOW_SAMPLE_API=true
+# Set own API values in ignored local.properties or the environment.
+export MICCONTROL_ALLOW_SAMPLE_API=false
 ./gradlew :TMessagesProj_AppStandalone:assembleAfatDebug \
   :TMessagesProj_AppStandalone:assembleAfatDebugAndroidTest \
   --max-workers=2 --no-parallel --console=plain \
@@ -180,7 +208,7 @@ Run this class alone with:
   org.miccontrol.messenger.web.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-## Test-account authentication: blocked before messaging
+## Historical dev2 test-account authentication: blocked before messaging
 
 The dev2 UI reached a real test-server code screen after correctly handling
 `PHONE_MIGRATE_2`, with phone/call-log permissions denied. The documented code
