@@ -31,3 +31,6 @@
   → Artifacts: [SVG иконки](TMessagesProj_AppStandalone/branding/danygramm-icon.svg), [legacy-иконка](TMessagesProj/src/main/res/drawable/miccontrol_launcher.xml), [manifest](TMessagesProj/config/release/AndroidManifest_standalone.xml), [APK и SHA-256](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-dev4), [исходники dev4](https://github.com/DV-Design/MicControl-Telegram/commit/88e1822557ba78eb6cd928f1751a19e961752fb5).
 
 Проверка на vivo X200 Ultra (вход, обычный/видеозвонок, Bluetooth, переключение обработки микрофона) выполняется при наличии устройства; результат сборки сам по себе не подтверждает качество звука на телефоне.
+
+- [x] `miccontrol-vnu` — **completed**: главный README описывает официальные исходники Telegram Android как основу Danygramm и изоляцию голоса как единственную добавленную пользовательскую функцию. Уточнён статус неофициальной сборки, сохранены ссылки на upstream commit, лицензию и технические особенности. Формулировки, локальные ссылки, якорь и whitespace проверены; APK не менялся.
+  → Artifacts: [главный README](README.md), [подробности сборки](README_MICCONTROL_RU.md).
