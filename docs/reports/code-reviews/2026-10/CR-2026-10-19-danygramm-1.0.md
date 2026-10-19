@@ -59,7 +59,10 @@ identity and installation data are retained. Full scope and evidence are in
 - XML/Python syntax, shellcheck, actionlint and whitespace checks PASS.
   CI configuration and nine configuration failure controls were reviewed;
   this release's actual APK was built and tested locally.
-- Public publication/download verification is added after the release upload.
+- Public stable release and full anonymous re-download: PASS, all three
+  assets match, GitHub latest selects `danygramm-1.0`, source commit
+  `c1b8f1ae16624e021bc7606cb15aa7941701e27b`. The actual redirect host is
+  allowed by the updater. Evidence: `artifacts/qa/1.0-public-download/verified.json`.
 
 ## Acceptance limits and next work
 

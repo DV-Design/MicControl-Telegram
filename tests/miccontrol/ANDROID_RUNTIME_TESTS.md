@@ -10,8 +10,12 @@ verbose logging are disabled. Own API configuration matched dev4 in memory;
 no credential values were printed or committed.
 
 [Release and download](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0).
-The repository and release are public; anonymous asset verification is recorded
-separately after publication. The source is pinned by that release tag.
+The repository and release are public. The source tag targets
+`c1b8f1ae16624e021bc7606cb15aa7941701e27b`. A full anonymous download of
+all three assets passed: APK bytes/hash, checksum file and updater metadata
+matched the tested candidate; `/releases/latest` selected this stable release.
+The actual redirect host was `release-assets.githubusercontent.com`, allowed
+by the app. Evidence: `artifacts/qa/1.0-public-download/verified.json`.
 
 The final run passed **28 tests in 28.485 seconds**, zero failures and zero
 ignored or assumption-skipped cases, on Android 16/API 36, arm64, **16 KiB

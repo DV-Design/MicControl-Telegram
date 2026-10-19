@@ -4,7 +4,8 @@
 
 ## Текущая работа: основа, три режима и перевод на экране
 
-- [ ] `miccontrol-bn0` — **in_progress**: фоновое соединение и настройки уведомлений, подписанная сборка без debug, проверка и установка обновлений из GitHub Releases с сохранением пакета и сертификата.
+- [x] `miccontrol-bn0` — **completed**: фоновое соединение и настройки уведомлений, подписанная сборка без debug, проверка и установка обновлений из GitHub Releases с сохранением пакета и сертификата.
+  → Artifacts: [обновления](TMessagesProj/src/main/java/org/telegram/messenger/DanygrammUpdater.java), [служба](TMessagesProj/src/main/java/org/telegram/messenger/NotificationsService.java), [релиз 1.0](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0), [28 проверок](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
 - [x] `miccontrol-1ir` — **completed**: три режима микрофона — изоляция голоса, шумоподавление, без эффектов; миграция настроек и проверка реальной обработки.
   → Artifacts: [обработка микрофона](TMessagesProj/jni/voip/miccontrol/VoiceIsolationProcessor.cpp), [меню](TMessagesProj/src/main/java/org/telegram/ui/Components/voip/MicrophoneModeSheet.java), [проверки](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
 - [x] `miccontrol-9ci` — **completed**: локальный перевод входящих сообщений и подписей на экране чата, выбор языка и возврат оригинала. Исходящие сообщения сохраняются без изменений.
@@ -40,7 +41,7 @@
   → Artifacts: [workflow](.github/workflows/build-apk.yml), [preflight](scripts/ci-preflight.py), [добавление API credentials](README_MICCONTROL_RU.md), [критерии функциональной проверки](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
   → Artifacts: [dev3 APK и SHA-256](https://github.com/DV-Design/MicControl-Telegram/releases/tag/miccontrol-dev3), [успешная CI-сборка](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39156162098).
 - [ ] `miccontrol-6w0` — **open**: проверить личные звонки на vivo X200 Ultra с AirPods 3, включая расположение кнопки, скрытие/показ управления, PiP и качество звука.
-- [ ] `miccontrol-7vi` — **open**: настроить Firebase при необходимости и production release-подпись; собственные API credentials уже добавлены и проверены в dev3/dev4.
+- [x] `miccontrol-7vi` — **completed**: собственные API, прежняя подпись, non-debug/logging и фоновое соединение проверены в релизе 1.0; для выбранного native MTProto способа свой Firebase не нужен. Остальные отключённые интеграции перечислены в README, физическая проверка остаётся в `miccontrol-6w0`.
 - [x] `miccontrol-bx8` — **completed**: кнопка «Микрофон» перенесена вниз справа, режимы открываются нижней панелью по нажатию. Четыре проверки реальных компонентов прошли за 6,867 с: обе темы и оба состояния, минимальный контраст 5,77:1, нажатия, радиовыбор, доступность и закрытие. Интеграция в экран звонка проверена по исходникам; живой звонок остаётся в `miccontrol-6w0`.
   → Artifacts: [экран звонка](TMessagesProj/src/main/java/org/telegram/ui/VoIPFragment.java), [нижняя панель](TMessagesProj/src/main/java/org/telegram/ui/Components/voip/MicrophoneModeSheet.java), [четыре UI-теста](TMessagesProj_AppStandalone/src/androidTest/java/org/miccontrol/test/MicControlMicrophoneModeSheetTest.java), [результаты и ограничения](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
 - [x] `miccontrol-a2j` — **completed**: имя Danygramm во всех 10 standalone-локалях; собственный белый истребитель на голубом фоне, legacy/adaptive/monochrome. Фактический launcher и installed metadata проверены. Dev4 установлен поверх dev3 без сброса данных; пакет, подпись и собственная API-конфигурация сохранены. APK опубликован, полностью скачан повторно; размер и SHA-256 совпали.
