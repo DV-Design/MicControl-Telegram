@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate CI inputs and restore the existing debug key without exposing secrets."""
+"""Validate release inputs and restore the existing signing key without exposing secrets."""
 
 import base64
 import binascii
@@ -51,7 +51,7 @@ def main():
             certificate = subprocess.run([keytool, "-exportcert", *common],
                                          capture_output=True, timeout=20, check=True).stdout
             if hashlib.sha256(certificate).hexdigest() != EXPECTED_CERT_SHA256:
-                fail("Signing certificate differs from the installed MicControl development APK.")
+                fail("Signing certificate differs from the installed Danygramm APK.")
             subprocess.run([keytool, "-certreq", *common, "-keypass", "android",
                             "-file", str(Path(directory) / "proof.csr")],
                            capture_output=True, timeout=20, check=True)

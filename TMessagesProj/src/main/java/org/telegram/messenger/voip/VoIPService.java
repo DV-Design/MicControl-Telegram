@@ -1002,9 +1002,13 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 	}
 
 	public void setVoiceIsolationEnabled(boolean enabled) {
-		SharedConfig.setVoiceIsolationEnabled(enabled);
+		setMicrophoneMode(enabled ? SharedConfig.MICROPHONE_VOICE_ISOLATION : SharedConfig.MICROPHONE_NOISE_SUPPRESSION);
+	}
+
+	public void setMicrophoneMode(int mode) {
+		SharedConfig.setMicrophoneMode(mode);
 		if (groupCall == null && !isConference()) {
-			NativeInstance.setVoiceIsolationEnabled(enabled);
+			NativeInstance.setMicrophoneMode(SharedConfig.microphoneMode);
 		}
 	}
 
@@ -3424,7 +3428,8 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 			final int voipDataSaving = convertDataSavingMode(preferences.getInt("VoipDataSaving", VoIPHelper.getDataSavingDefault()));
 			final Instance.ServerConfig serverConfig = Instance.getGlobalServerConfig();
 			final boolean enableAec = !(sysAecAvailable && serverConfig.useSystemAec);
-			final boolean enableNs = !(sysNsAvailable && serverConfig.useSystemNs);
+			// Personal calls use software suppression so all three modes remain controllable.
+			final boolean enableNs = SharedConfig.microphoneMode != SharedConfig.MICROPHONE_NONE;
 			final String logFilePath = BuildVars.DEBUG_VERSION ? VoIPHelper.getLogFilePath("voip" + privateCall.id) : VoIPHelper.getLogFilePath("" + privateCall.id, false);
 			final String statsLogFilePath = VoIPHelper.getLogFilePath("" + privateCall.id, true);
 			final Instance.Config config = new Instance.Config(initializationTimeout, receiveTimeout, voipDataSaving, privateCall.p2p_allowed, enableAec, enableNs, true, false, serverConfig.enableStunMarking, logFilePath, statsLogFilePath, privateCall.protocol.max_layer, privateCall.custom_parameters == null ? "" : privateCall.custom_parameters.data);
@@ -3991,13 +3996,13 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 				.setContentIntent(PendingIntent.getActivity(this, 50, intent, PendingIntent.FLAG_MUTABLE));
 		if (isConference()) {
 			builder.setContentTitle(LocaleController.getString(R.string.VoipConference));
-			builder.setSmallIcon(isMicMute() ? R.drawable.voicechat_muted : R.drawable.voicechat_active);
+			builder.setSmallIcon(R.drawable.danygramm_notification);
 		} else if (groupCall != null) {
 			builder.setContentTitle(ChatObject.isChannelOrGiga(chat) ? LocaleController.getString(R.string.VoipLiveStream) : LocaleController.getString(R.string.VoipVoiceChat));
-			builder.setSmallIcon(isMicMute() ? R.drawable.voicechat_muted : R.drawable.voicechat_active);
+			builder.setSmallIcon(R.drawable.danygramm_notification);
 		} else {
 			builder.setContentTitle(LocaleController.getString(R.string.VoipOutgoingCall));
-			builder.setSmallIcon(R.drawable.call);
+			builder.setSmallIcon(R.drawable.danygramm_notification);
             builder.setOngoing(true);
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -4717,9 +4722,9 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 						.setContentTitle(LocaleController.getString(R.string.VoipOutgoingCall))
 						.setShowWhen(false);
 				if (groupCall != null) {
-					bldr.setSmallIcon(isMicMute() ? R.drawable.voicechat_muted : R.drawable.voicechat_active);
+					bldr.setSmallIcon(R.drawable.danygramm_notification);
 				} else {
-					bldr.setSmallIcon(R.drawable.call);
+					bldr.setSmallIcon(R.drawable.danygramm_notification);
 				}
 				foregroundStarted = true;
 				if (Build.VERSION.SDK_INT >= 33) {
@@ -4732,7 +4737,7 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 				Notification.Builder bldr = new Notification.Builder(this, NotificationsController.OTHER_NOTIFICATIONS_CHANNEL)
 						.setContentTitle(LocaleController.getString(R.string.VoipCallEnded))
 						.setShowWhen(false);
-				bldr.setSmallIcon(R.drawable.call);
+				bldr.setSmallIcon(R.drawable.danygramm_notification);
 				foregroundStarted = true;
 				if (Build.VERSION.SDK_INT >= 33) {
 					startForeground(foregroundId = ID_ONGOING_CALL_NOTIFICATION, foregroundNotification = bldr.build(), lastForegroundType = getCurrentForegroundType());
@@ -5202,7 +5207,7 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 
 		Notification.Builder builder = new Notification.Builder(this)
 				.setContentTitle(video ? LocaleController.getString(R.string.VoipInVideoCallBranding) : LocaleController.getString(R.string.VoipInCallBranding))
-				.setSmallIcon(R.drawable.call)
+				.setSmallIcon(R.drawable.danygramm_notification)
 				.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE));
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			SharedPreferences nprefs = MessagesController.getGlobalNotificationsSettings();

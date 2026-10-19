@@ -1,6 +1,88 @@
 # Android runtime tests
 
-## Current release: Danygramm dev4
+## Current release: Danygramm 1.0
+
+The final **AfatStandalone** APK is `13.0.2-danygramm-1.0`, code `71799`,
+package `org.miccontrol.messenger.web`, **58,298,390 bytes**. SHA-256:
+`02ba8667b1909cffc20d0a5d412d3d6413f1d0d3e0da8a3a795531b4a12191ec`. Certificate remains
+`59e104c1d8b66e20c47119aed387993df655475cdd3153fb21bfb3752d85debe`. The app and library debug flags and inherited
+verbose logging are disabled. Own API configuration matched dev4 in memory;
+no credential values were printed or committed.
+
+[Release and download](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0).
+The repository and release are public; anonymous asset verification is recorded
+separately after publication. The source is pinned by that release tag.
+
+The final run passed **28 tests in 28.485 seconds**, zero failures and zero
+ignored or assumption-skipped cases, on Android 16/API 36, arm64, **16 KiB
+pages**, four emulator cores and 4 GiB RAM. The final APK hash remained unchanged
+through the last test-only rebuild. Wi-Fi and mobile data were disabled, airplane
+mode was enabled and `dumpsys connectivity` reported **no active default network**
+before this run. Both translation opt-in flags were explicitly enabled; the
+real SDK used models downloaded in the preceding online check.
+
+| Area | Cases | Verified scope |
+|---|---:|---|
+| Native audio and configuration | 4 | All three preferences and migration, repeated JNI changes, actual APM+RNNoise noise processing, exact no-effects PCM bypass, non-debug and logging flags |
+| Background service | 2 | Private `specialUse` manifest; actual foreground service, notification ID/icons/flag, background/resume and stop when the in-memory account fixture is removed; microphone permission unchanged |
+| Branding | 1 | Actual launcher, legacy and status drawables; two small red stars; visual comparison with the upstream paper plane |
+| Update verification | 4 | Installed release APK accepted; wrong hash, downgrade, wrong package/size/path, forbidden redirects and an actual differently signed APK rejected; private FileProvider URI works |
+| Microphone sheet | 6 | Three selected states in light/dark themes, independent literal labels and no `LOC_ERR`, rendered contrast at least 5.77:1, 48 dp targets, accessibility, real tap callback and dismissal |
+| Translation model and state | 8 | Real SDK translation, cached offline chat session, original payload/entities/outgoing preservation, captions, cache rebind, stale edits/target callbacks, Premium preferences and summary isolation |
+| Real translated cell | 1 | Attached production `ChatMessageCell` rebinds the same object; real layout, accessibility, glyphs, changed/restored height and three PNGs; restored raster independently matched the original exactly |
+| Binary localizations | 2 | All 48 new keys in installed English and Russian dictionaries, resource-ID/name agreement and independent literal expectations |
+
+The first real ML Kit model download and EN→RU translation passed separately
+in **8.438 seconds**, on the preceding candidate `6fe6c69f…efef2`. The subsequent
+product change added the missing localization inputs; SDK and translation code
+were unchanged. The final 28-case run exercised the real model and chat pipeline
+again with the network disabled. No login, signup or code-delivery request was
+submitted for these feature checks. The background fixture is in-memory only;
+the test verifies that no serialized user was persisted.
+
+The final app also launched normally outside instrumentation: **COLD 1,228 ms**,
+live process, no fatal exception. `adb install -r` preserved the original
+`firstInstallTime=2026-10-17 00:33:59`. All three packaged native libraries have
+16 KiB ELF LOAD alignment, including ML Kit translation.
+
+Host ASan/UBSan checks passed after the final native changes, including
+8/16/32/48 kHz mono/stereo, bypass, channel independence, toggles/reset and
+allocation cleanup. On the deterministic noise fixture, stronger/old residual
+energy was **0.718265**. On clean local TTS, stronger/old speech energy was
+**0.984770**, waveform cosine **0.999727**. These are fixture measurements,
+not a promise about every real recording or speaker separation.
+
+Corrected issues before this PASS: new feature XML files were missing from
+Telegram's binary-localization generator; Android 13+ icon overrides still
+referenced the old fighter; a separately shrunk AndroidTest `j$` runtime
+shadowed 388 methods used by the app. The full desugar runtime is kept only in
+the test APK. Test fixtures were also corrected to restore nullable identity
+without setter side effects, wait for asynchronous notification publication,
+and initialize chat graphics through the normal `Theme.createChatResources`
+path. Initial failed-run logs are retained; they are not counted as PASS.
+
+Local evidence: `artifacts/qa/1.0-final.txt`, `1.0-final-logcat.txt`,
+`1.0-final-summary.json`, `1.0-final-product-build.log`, `1.0-build.log`,
+`1.0-candidate.json`, `1.0-apksigner.log`, `1.0-final-normal-launch.txt`,
+`1.0-final-offline-connectivity.txt`, `1.0-audio-host-review.log`, and the
+`1.0-final-qa-*` screenshot directories. The clean product build passed in
+**2m 31s** (351 tasks); the final test-only rebuild passed in **8s**.
+
+The production APK requires no instrumentation for normal use. Install the
+matching AndroidTest APK only on a dedicated, unauthenticated test device.
+Run the eight new feature test classes with `danygrammTranslationModels=true`
+and `danygrammTranslationOffline=true` after downloading the EN/RU model once.
+Preserve the offline precondition, foreign-signer fixture and notification
+permission needed by the corresponding cases. Do not interpret an assumption
+skip or a cached-model run as a new online model download.
+
+Real incoming delivery after prolonged OriginOS sleep, authenticated messaging,
+file transfer, a peer call, Bluetooth routing and physical vivo/AirPods quality
+remain separate acceptance in `miccontrol-6w0` / historical `miccontrol-usj`.
+RNNoise does not identify the owner or reliably remove competing speakers;
+owner-only target-speaker extraction is the next task `miccontrol-adn`.
+
+## Historical release: Danygramm dev4
 
 The built candidate is **Danygramm**, version `13.0.2-danygramm-dev4`, code
 `71789`. The package remains `org.miccontrol.messenger.web`; the existing
@@ -12,8 +94,8 @@ SHA-256 `c059f169bea7574e4556e4ed6dd66cfc8450e1d2448b957c9f3f70047f53b099`.
 The published prerelease is
 [danygramm-dev4](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-dev4).
 The [APK asset](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-dev4/Danygramm-arm64-dev4.apk)
-requires GitHub sign-in with access to the private repository. The release
-targets pushed source commit `88e1822557ba78eb6cd928f1751a19e961752fb5`.
+was checked with authentication while the repository was private. The repository
+is now public. The release targets pushed source commit `88e1822557ba78eb6cd928f1751a19e961752fb5`.
 
 | Check on this dev4 candidate | Recorded result / scope |
 |---|---|

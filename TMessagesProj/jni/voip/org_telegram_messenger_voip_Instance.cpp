@@ -754,6 +754,50 @@ JNIEXPORT void JNICALL Java_org_telegram_messenger_voip_NativeInstance_setVoiceI
 }
 
 extern "C"
+JNIEXPORT void JNICALL Java_org_telegram_messenger_voip_NativeInstance_setMicrophoneMode(JNIEnv *env, jclass clazz, jint mode) {
+    miccontrol::SetMicrophoneMode(mode);
+}
+
+// A deterministic, offline probe through the same APM used by calls. No audio
+// device, network connection or account is accessed by this diagnostic.
+extern "C"
+JNIEXPORT jdoubleArray JNICALL Java_org_telegram_messenger_voip_NativeInstance_testMicrophoneModes(JNIEnv *env, jclass clazz) {
+    const int saved = static_cast<int>(miccontrol::GetMicrophoneMode());
+    double result[7] = {};
+    // Keep one live APM across all transitions, including returning to bypass
+    // after both suppressors have run. Fresh instances would miss refresh bugs.
+    auto processing = webrtc::AudioProcessingBuilder().Create();
+    for (const int mode : {0, 1, 2, 1, 2, 0}) {
+        miccontrol::SetMicrophoneMode(mode);
+        auto config = processing->GetConfig();
+        result[mode + 3] = config.noise_suppression.enabled ? 1 : 0;
+        webrtc::StreamConfig format(48000, 1);
+        uint32_t random = 42;
+        for (int block = 0; block < 240; ++block) {
+            float input[480], output[480];
+            for (auto& sample : input) {
+                random = random * 1664525u + 1013904223u;
+                sample = (static_cast<float>(random >> 16) / 32768.0f - 1.0f) * 0.09f;
+            }
+            const float* sources[] = {input};
+            float* destinations[] = {output};
+            if (processing->ProcessStream(sources, format, format, destinations) != 0) {
+                result[mode] = -1;
+                break;
+            }
+            for (int i = 0; i < 480; ++i) {
+                if (block >= 80) result[mode] += static_cast<double>(output[i]) * output[i];
+                if (mode == 0) result[6] = std::max(result[6], static_cast<double>(std::abs(output[i] - input[i])));
+            }
+        }
+    }
+    miccontrol::SetMicrophoneMode(saved);
+    auto array = env->NewDoubleArray(7);
+    env->SetDoubleArrayRegion(array, 0, 7, result);
+    return array;
+}
+
+extern "C"
 JNIEXPORT void JNICALL Java_org_telegram_messenger_voip_NativeInstance_setNoiseSuppressionEnabled(JNIEnv *env, jobject obj, jboolean enabled) {
     InstanceHolder *instance = getInstanceHolder(env, obj);
     if (instance->groupNativeInstance == nullptr) {

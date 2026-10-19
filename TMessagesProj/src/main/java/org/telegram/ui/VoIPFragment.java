@@ -1843,9 +1843,9 @@ public class VoIPFragment implements
         }
         AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
         hideUiRunnableWaiting = false;
-        MicrophoneModeSheet sheet = new MicrophoneModeSheet(activity, SharedConfig.voiceIsolationEnabled, enabled -> {
+        MicrophoneModeSheet sheet = new MicrophoneModeSheet(activity, SharedConfig.microphoneMode, mode -> {
             if (isMicrophoneModeAvailable()) {
-                VoIPService.getSharedInstance().setVoiceIsolationEnabled(enabled);
+                VoIPService.getSharedInstance().setMicrophoneMode(mode);
                 updateMicrophoneMode();
             }
         });
@@ -1868,16 +1868,15 @@ public class VoIPFragment implements
         microphoneModeView.setVisibility(show ? View.VISIBLE : View.GONE);
         microphoneModeView.setEnabled(show);
         microphoneModeView.setAlpha(uiVisibilityAlpha);
-        final String mode = LocaleController.getString(SharedConfig.voiceIsolationEnabled
-                ? R.string.MicControlVoiceIsolation : R.string.MicControlStandard);
+        final String mode = LocaleController.getString(MicrophoneModeSheet.modeName(SharedConfig.microphoneMode));
         microphoneModeView.setContentDescription(LocaleController.formatString("MicControlMicrophoneMode",
                 R.string.MicControlMicrophoneMode, mode));
-        if (microphoneModeView.getTag() == null || (boolean) microphoneModeView.getTag() != SharedConfig.voiceIsolationEnabled) {
+        if (microphoneModeView.getTag() == null || (int) microphoneModeView.getTag() != SharedConfig.microphoneMode) {
             Drawable icon = ContextCompat.getDrawable(activity, R.drawable.msg_noise_on).mutate();
-            icon.setColorFilter(SharedConfig.voiceIsolationEnabled ? 0xff7dc4ff : Color.WHITE, android.graphics.PorterDuff.Mode.SRC_IN);
+            icon.setColorFilter(SharedConfig.microphoneMode == SharedConfig.MICROPHONE_VOICE_ISOLATION ? 0xff7dc4ff : Color.WHITE, android.graphics.PorterDuff.Mode.SRC_IN);
             icon.setBounds(0, 0, dp(22), dp(22));
             microphoneModeView.setCompoundDrawablesRelative(icon, null, null, null);
-            microphoneModeView.setTag(SharedConfig.voiceIsolationEnabled);
+            microphoneModeView.setTag(SharedConfig.microphoneMode);
         }
         if (!available) {
             dismissMicrophoneModeSheet();

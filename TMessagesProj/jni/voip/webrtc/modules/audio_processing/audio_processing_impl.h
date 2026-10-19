@@ -73,6 +73,9 @@ class AudioProcessingImpl : public AudioProcessing {
   int Initialize() override;
   int Initialize(const ProcessingConfig& processing_config) override;
   void ApplyConfig(const AudioProcessing::Config& config) override;
+  // Refresh only the microphone policy against the current configuration while
+  // holding both native locks; never replay a snapshot over engine/AEC updates.
+  void RefreshMicrophoneMode();
   bool CreateAndAttachAecDump(
       absl::string_view file_name,
       int64_t max_log_size_bytes,
@@ -309,6 +312,8 @@ class AudioProcessingImpl : public AudioProcessing {
   // Methods requiring APM running in a single-threaded manner, requiring both
   // the render and capture lock to be acquired.
   void InitializeLocked(const ProcessingConfig& config)
+      RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_render_, mutex_capture_);
+  void ApplyConfigLocked(const AudioProcessing::Config& config)
       RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_render_, mutex_capture_);
   void InitializeResidualEchoDetector()
       RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_render_, mutex_capture_);

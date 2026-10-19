@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammTranslateTitle">Перевод на экране</string>
+    <string name="DanygrammTranslateEnable">Переводить входящие сообщения</string>
+    <string name="DanygrammTranslateOriginal">Показать оригиналы сообщений</string>
+    <string name="DanygrammTranslateOriginalStatus">Оригиналы сообщений</string>
+    <string name="DanygrammTranslateLanguage">Язык перевода</string>
+    <string name="DanygrammTranslateInfo">Полученные сообщения и подписи переводятся на устройстве. Оригиналы и исходящие сообщения сохраняются без изменений. Модели скачиваются по мере необходимости (около 30 МБ на язык, до четырёх языков), затем перевод работает без интернета. Нажмите на панель в чате, чтобы показать оригиналы или сменить язык. Показ оригиналов останавливает перевод; уже начатая загрузка модели может завершиться в фоне.</string>
+    <string name="DanygrammTranslateReady">Перевод на устройстве</string>
+    <string name="DanygrammTranslateWorking">Перевод на устройстве…</string>
+    <string name="DanygrammTranslateModels">Подготовка моделей; ожидание скачивания…</string>
+    <string name="DanygrammTranslateUnsupported">Язык не определён или не поддерживается; показан оригинал.</string>
+    <string name="DanygrammTranslateFailed">Перевод недоступен. Проверьте подключение, Wi-Fi и свободное место, затем нажмите «Повторить». Оригиналы сохранены.</string>
+    <string name="DanygrammTranslateModelLimit">На устройстве сохраняется до четырёх языковых моделей. Перед скачиванием другого языка удалите модели перевода.</string>
+    <string name="DanygrammTranslateWifi">Скачивание моделей: только Wi-Fi</string>
+    <string name="DanygrammTranslateAnyNetwork">Скачивание моделей: любая сеть</string>
+    <string name="DanygrammTranslateMobileConfirm">Разрешить скачивание моделей через мобильную сеть? На каждый язык требуется около 30 МБ. Возможна плата за трафик. Загрузка, уже ожидающая Wi-Fi, может по-прежнему требовать Wi-Fi.</string>
+    <string name="DanygrammTranslateRetry">Повторить перевод</string>
+    <string name="DanygrammTranslateDeleteModels">Удалить скачанные модели перевода</string>
+    <string name="DanygrammTranslateDeleteInfo">Перевод в этом чате будет выключен. Модели общие для всех чатов, после удаления их потребуется скачать заново.</string>
+</resources>

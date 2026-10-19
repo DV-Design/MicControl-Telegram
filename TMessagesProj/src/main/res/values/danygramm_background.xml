@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammSettingsInfo">Background delivery and app updates</string>
+    <string name="DanygrammBackground">Background notifications</string>
+    <string name="DanygrammBackgroundRunning">Connected for incoming messages and calls</string>
+    <string name="DanygrammBackgroundStopped">Not running — tap to enable</string>
+    <string name="DanygrammBackgroundNeedsAccount">Log in to enable background delivery</string>
+    <string name="DanygrammBackgroundStartError">Android did not allow background delivery to start. Reopen Danygramm and try again. Check the app’s notification and battery settings.</string>
+    <string name="DanygrammSettingsUnavailable">Open Android Settings, then Apps → Danygramm to change this permission.</string>
+    <string name="DanygrammBackgroundInfo">Background delivery keeps a quiet connection notification. Allow notifications and unrestricted battery use for timely messages and calls. Force stopping the app prevents delivery until you reopen it.</string>
+    <string name="DanygrammOn">On</string>
+    <string name="DanygrammOff">Off</string>
+    <string name="DanygrammSystemNotifications">System notifications</string>
+    <string name="DanygrammIncomingCalls">Full-screen incoming calls</string>
+    <string name="DanygrammBattery">Unrestricted battery use</string>
+    <string name="DanygrammCheckUpdates">Check for updates</string>
+    <string name="DanygrammCheckingUpdate">Checking for updates…</string>
+    <string name="DanygrammNoUpdate">You have the latest available version.</string>
+    <string name="DanygrammUpdateAvailable">A new Danygramm version is available. Download and install it?</string>
+    <string name="DanygrammUpdateDownload">Download update</string>
+    <string name="DanygrammUpdateDownloading">Downloading update…</string>
+    <string name="DanygrammUpdateBusy">An update check or download is already running.</string>
+    <string name="DanygrammUpdateError">Could not check or install the update. Check your connection and try again.</string>
+    <string name="DanygrammUpdateInvalid">The update could not be verified. Installation was blocked.</string>
+    <string name="DanygrammUpdateInstallPermission">Allow updates from Danygramm in Android settings, then check for updates again. The verified download will be reused.</string>
+    <string name="DanygrammUpdateOpenSettings">Open settings</string>
+</resources>

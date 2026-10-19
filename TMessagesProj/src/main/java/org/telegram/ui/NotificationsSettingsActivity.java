@@ -213,8 +213,9 @@ public class NotificationsSettingsActivity extends BaseFragment implements Notif
         otherSection2Row = rowCount++;
 
         otherSectionRow = rowCount++;
-        notificationsServiceRow = rowCount++;
-        notificationsServiceConnectionRow = rowCount++;
+        // Standalone background delivery is configured once for all accounts in Danygramm settings.
+        notificationsServiceRow = ApplicationLoader.isStandaloneBuild() ? -1 : rowCount++;
+        notificationsServiceConnectionRow = ApplicationLoader.isStandaloneBuild() ? -1 : rowCount++;
         androidAutoAlertRow = -1;
         repeatRow = rowCount++;
         resetSection2Row = rowCount++;

@@ -9,6 +9,7 @@
  */
 
 #include "modules/audio_processing/audio_processing_impl.h"
+#include "miccontrol/VoiceIsolationProcessor.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -716,7 +717,9 @@ AudioProcessingImpl::AudioProcessingImpl(
   Initialize();
 }
 
-AudioProcessingImpl::~AudioProcessingImpl() = default;
+AudioProcessingImpl::~AudioProcessingImpl() {
+  miccontrol::UnregisterAudioProcessing(this);
+}
 
 int AudioProcessingImpl::Initialize() {
   // Run in a single-threaded manner during initialization.
@@ -908,8 +911,19 @@ void AudioProcessingImpl::ApplyConfig(const AudioProcessing::Config& config) {
   MutexLock lock_render(&mutex_render_);
   MutexLock lock_capture(&mutex_capture_);
 
-  const auto adjusted_config =
+  ApplyConfigLocked(config);
+}
+
+void AudioProcessingImpl::RefreshMicrophoneMode() {
+  MutexLock lock_render(&mutex_render_);
+  MutexLock lock_capture(&mutex_capture_);
+  ApplyConfigLocked(config_);
+}
+
+void AudioProcessingImpl::ApplyConfigLocked(const AudioProcessing::Config& config) {
+  auto adjusted_config =
       AdjustConfig(config, gain_controller2_experiment_params_);
+  miccontrol::ConfigureCapture(adjusted_config, submodules_.capture_post_processor.get());
   RTC_LOG(LS_INFO) << "AudioProcessing::ApplyConfig: "
                    << adjusted_config.ToString();
 

@@ -51,7 +51,8 @@ public class ApplicationLoaderImpl extends ApplicationLoader {
 
     @Override
     protected void checkForUpdatesInternal() {
-
+        BaseFragment fragment = LaunchActivity.getLastFragment();
+        if (fragment != null) DanygrammUpdater.check(fragment, true);
     }
 
     protected void appCenterLogInternal(Throwable e) {
@@ -271,6 +272,8 @@ public class ApplicationLoaderImpl extends ApplicationLoader {
     @Override
     public void onResume() {
         super.onResume();
+        ApplicationLoader.startPushService();
+        DanygrammUpdater.maybeCheck();
         SMSJobsNotification.check();
     }
 

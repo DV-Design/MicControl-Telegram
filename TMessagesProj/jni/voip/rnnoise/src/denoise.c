@@ -455,7 +455,7 @@ void pitch_filter(kiss_fft_cpx *X, const kiss_fft_cpx *P, const float *Ex, const
   }
 }
 
-float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
+float rnnoise_process_frame_strength(DenoiseState *st, float *out, const float *in, float strength) {
   int i;
   kiss_fft_cpx X[FREQ_SIZE];
   kiss_fft_cpx P[WINDOW_SIZE];
@@ -483,6 +483,8 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
     interp_band_gain(gf, g);
 #if 1
     for (i=0;i<FREQ_SIZE;i++) {
+      /* Preserve speech bins near unity; strengthen only learned attenuation. */
+      if (strength > 1.f) gf[i] = powf(MAX16(0.f, MIN16(1.f, gf[i])), MIN16(strength, 1.3f));
       X[i].r *= gf[i];
       X[i].i *= gf[i];
     }
@@ -491,6 +493,10 @@ float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
 
   frame_synthesis(st, out, X);
   return vad_prob;
+}
+
+float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {
+  return rnnoise_process_frame_strength(st, out, in, 1.f);
 }
 
 #if TRAINING

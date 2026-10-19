@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammSettingsInfo">Работа в фоне и обновления приложения</string>
+    <string name="DanygrammBackground">Фоновые уведомления</string>
+    <string name="DanygrammBackgroundRunning">Соединение для входящих сообщений и звонков</string>
+    <string name="DanygrammBackgroundStopped">Не запущено — нажмите для включения</string>
+    <string name="DanygrammBackgroundNeedsAccount">Войдите в аккаунт для доставки в фоне</string>
+    <string name="DanygrammBackgroundStartError">Android не разрешил запустить доставку в фоне. Снова откройте Danygramm и повторите попытку. Проверьте разрешения уведомлений и ограничения батареи.</string>
+    <string name="DanygrammSettingsUnavailable">Откройте настройки Android → Приложения → Danygramm и измените разрешение.</string>
+    <string name="DanygrammBackgroundInfo">Для доставки в фоне сохраняется тихое уведомление о соединении. Разрешите уведомления и работу без ограничений батареи, чтобы сообщения и звонки приходили вовремя. После принудительной остановки нужно снова открыть приложение.</string>
+    <string name="DanygrammOn">Включено</string>
+    <string name="DanygrammOff">Выключено</string>
+    <string name="DanygrammSystemNotifications">Системные уведомления</string>
+    <string name="DanygrammIncomingCalls">Входящие звонки на весь экран</string>
+    <string name="DanygrammBattery">Работа без ограничений батареи</string>
+    <string name="DanygrammCheckUpdates">Проверить обновления</string>
+    <string name="DanygrammCheckingUpdate">Проверка обновлений…</string>
+    <string name="DanygrammNoUpdate">Установлена последняя доступная версия.</string>
+    <string name="DanygrammUpdateAvailable">Доступна новая версия Danygramm. Скачать и установить?</string>
+    <string name="DanygrammUpdateDownload">Скачать обновление</string>
+    <string name="DanygrammUpdateDownloading">Скачивание обновления…</string>
+    <string name="DanygrammUpdateBusy">Проверка или скачивание обновления уже выполняется.</string>
+    <string name="DanygrammUpdateError">Не удалось проверить или установить обновление. Проверьте подключение и повторите попытку.</string>
+    <string name="DanygrammUpdateInvalid">Обновление не прошло проверку. Установка заблокирована.</string>
+    <string name="DanygrammUpdateInstallPermission">Разрешите установку обновлений из Danygramm в настройках Android, затем снова проверьте обновления. Проверенный файл будет использован повторно.</string>
+    <string name="DanygrammUpdateOpenSettings">Открыть настройки</string>
+</resources>

@@ -1,4 +1,4 @@
-name: Build MicControl APK with own API
+name: Build Danygramm release APK
 
 on:
   workflow_dispatch:
@@ -52,7 +52,7 @@ jobs:
       - name: Fetch pinned submodules
         run: git submodule update --init --recursive --depth=1
 
-      - name: Build arm64 APK with own API
+      - name: Build non-debug arm64 standalone with own API
         env:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
@@ -62,18 +62,20 @@ jobs:
         shell: bash
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs \
-            artifacts/MicControl-arm64-dev.apk > "$RUNNER_TEMP/miccontrol-signature.txt"
+            artifacts/Danygramm-arm64.apk > "$RUNNER_TEMP/danygramm-signature.txt"
           grep -Fxq 'Signer #1 certificate SHA-256 digest: 59e104c1d8b66e20c47119aed387993df655475cdd3153fb21bfb3752d85debe' \
-            "$RUNNER_TEMP/miccontrol-signature.txt"
-          (cd artifacts && sha256sum MicControl-arm64-dev.apk > MicControl-arm64-dev.apk.sha256)
+            "$RUNNER_TEMP/danygramm-signature.txt"
+          (cd artifacts && sha256sum -c Danygramm-arm64.apk.sha256)
+          python3 scripts/verify-release-artifacts.py
 
-      - name: Upload APK and SHA-256 only
+      - name: Upload release APK, SHA-256 and update metadata
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: MicControl-arm64-${{ github.run_number }}
+          name: Danygramm-arm64-${{ github.run_number }}
           path: |
-            artifacts/MicControl-arm64-dev.apk
-            artifacts/MicControl-arm64-dev.apk.sha256
+            artifacts/Danygramm-arm64.apk
+            artifacts/Danygramm-arm64.apk.sha256
+            artifacts/danygramm-update.json
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -82,9 +84,9 @@ jobs:
         shell: bash
         run: |
           version=$(sed -n 's/^APP_VERSION_NAME=//p' gradle.properties)
-          digest=$(cut -d ' ' -f 1 artifacts/MicControl-arm64-dev.apk.sha256)
+          digest=$(cut -d ' ' -f 1 artifacts/Danygramm-arm64.apk.sha256)
           {
-            printf 'MicControl %s / arm64-v8a\n\n' "$version"
+            printf 'Danygramm %s / arm64-v8a / non-debug standalone\n\n' "$version"
             printf 'Source commit: %s\n\n' "$GITHUB_SHA"
             printf 'APK SHA-256: %s\n\n' "$digest"
             printf 'Existing signing identity verified; sample API disabled.\n\n'

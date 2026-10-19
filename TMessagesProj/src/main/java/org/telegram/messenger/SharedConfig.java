@@ -303,6 +303,8 @@ public class SharedConfig {
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
     public static boolean noiseSupression;
+    public static final int MICROPHONE_NONE = 0, MICROPHONE_NOISE_SUPPRESSION = 1, MICROPHONE_VOICE_ISOLATION = 2;
+    public static int microphoneMode;
     public static boolean voiceIsolationEnabled;
     public static boolean debugWebView;
     public static boolean sortContactsByName;
@@ -660,7 +662,8 @@ public class SharedConfig {
             lockRecordAudioVideoHint = preferences.getInt("lockRecordAudioVideoHint", 0);
             disableVoiceAudioEffects = preferences.getBoolean("disableVoiceAudioEffects", false);
             noiseSupression = preferences.getBoolean("noiseSupression", false);
-            voiceIsolationEnabled = preferences.getBoolean("miccontrolVoiceIsolation", false);
+            microphoneMode = readMicrophoneMode(preferences);
+            voiceIsolationEnabled = microphoneMode == MICROPHONE_VOICE_ISOLATION;
             chatSwipeAction = preferences.getInt("ChatSwipeAction", -1);
             messageSeenHintCount = preferences.getInt("messageSeenCount", 3);
             emojiInteractionsHintCount = preferences.getInt("emojiInteractionsHintCount", 3);
@@ -1091,9 +1094,20 @@ public class SharedConfig {
     }
 
     public static void setVoiceIsolationEnabled(boolean enabled) {
-        voiceIsolationEnabled = enabled;
-        MessagesController.getGlobalMainSettings().edit()
-                .putBoolean("miccontrolVoiceIsolation", enabled).apply();
+        setMicrophoneMode(enabled ? MICROPHONE_VOICE_ISOLATION : MICROPHONE_NOISE_SUPPRESSION);
+    }
+
+    public static int readMicrophoneMode(SharedPreferences preferences) {
+        int mode = preferences.getInt("danygrammMicrophoneMode",
+                preferences.getBoolean("miccontrolVoiceIsolation", false) ? MICROPHONE_VOICE_ISOLATION : MICROPHONE_NOISE_SUPPRESSION);
+        return mode >= MICROPHONE_NONE && mode <= MICROPHONE_VOICE_ISOLATION ? mode : MICROPHONE_NOISE_SUPPRESSION;
+    }
+
+    public static void setMicrophoneMode(int mode) {
+        microphoneMode = mode >= MICROPHONE_NONE && mode <= MICROPHONE_VOICE_ISOLATION ? mode : MICROPHONE_NOISE_SUPPRESSION;
+        voiceIsolationEnabled = microphoneMode == MICROPHONE_VOICE_ISOLATION;
+        MessagesController.getGlobalMainSettings().edit().putInt("danygrammMicrophoneMode", microphoneMode)
+                .putBoolean("miccontrolVoiceIsolation", voiceIsolationEnabled).apply();
     }
 
     public static void toggleDebugWebView() {

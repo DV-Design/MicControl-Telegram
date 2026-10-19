@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammNoiseSuppression">Noise suppression</string>
+    <string name="DanygrammNoEffects">No effects</string>
+    <string name="DanygrammIsolationInfo">Stronger voice isolation for noisy surroundings.</string>
+    <string name="DanygrammNoiseSuppressionInfo">Reduces steady background noise with regular voice processing.</string>
+    <string name="DanygrammNoEffectsInfo">No noise suppression, voice isolation or automatic amplification.</string>
+    <string name="DanygrammModesInfo">Personal voice and video calls. Echo cancellation stays on to prevent feedback. Your headset may also process sound.</string>
+</resources>

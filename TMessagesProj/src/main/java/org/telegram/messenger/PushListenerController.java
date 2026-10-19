@@ -1839,6 +1839,7 @@ public class PushListenerController {
 
         @Override
         public boolean hasServices() {
+            if (com.google.firebase.FirebaseOptions.fromResource(ApplicationLoader.applicationContext) == null) return false;
             if (hasServices == null) {
                 try {
                     int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(ApplicationLoader.applicationContext);

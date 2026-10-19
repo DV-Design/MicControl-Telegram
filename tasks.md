@@ -2,6 +2,22 @@
 
 Все пункты отмечаются выполненными только после проверки результата.
 
+## Текущая работа: основа, три режима и перевод на экране
+
+- [ ] `miccontrol-bn0` — **in_progress**: фоновое соединение и настройки уведомлений, подписанная сборка без debug, проверка и установка обновлений из GitHub Releases с сохранением пакета и сертификата.
+- [x] `miccontrol-1ir` — **completed**: три режима микрофона — изоляция голоса, шумоподавление, без эффектов; миграция настроек и проверка реальной обработки.
+  → Artifacts: [обработка микрофона](TMessagesProj/jni/voip/miccontrol/VoiceIsolationProcessor.cpp), [меню](TMessagesProj/src/main/java/org/telegram/ui/Components/voip/MicrophoneModeSheet.java), [проверки](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
+- [x] `miccontrol-9ci` — **completed**: локальный перевод входящих сообщений и подписей на экране чата, выбор языка и возврат оригинала. Исходящие сообщения сохраняются без изменений.
+  → Artifacts: [локальный перевод](TMessagesProj/src/main/java/org/telegram/messenger/LocalChatTranslation.java), [чат](TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [проверки](tests/miccontrol/ANDROID_RUNTIME_TESTS.md).
+- [x] `miccontrol-agy` — **completed**: подтверждён бумажный самолётик в стиле Telegram с маленькими красными звёздами на крыльях; согласовать launcher и уведомления.
+  → Artifacts: [самолётик](TMessagesProj/src/main/res/drawable/danygramm_plane.xml), [иконка уведомлений](TMessagesProj/src/main/res/drawable/danygramm_notification.xml), [отчёт](docs/reports/code-reviews/2026-10/CR-2026-10-19-danygramm-1.0.md).
+
+## Следующая задача после релиза 1.0
+
+- [ ] `miccontrol-adn` — **open**: выделять именно голос владельца, в том числе при чужой речи рядом. Нужны нейросетевая модель выделения целевого говорящего, проверка задержки на Android и измерения на смеси двух голосов; усиление RNNoise эту задачу не заменяет.
+
+## Выполнено ранее и отдельные проверки устройства
+
 Первый APK и отправка исходников завершены (`miccontrol-2c2`). 18 октября пользователь подтвердил, что dev3 работает; проблема личного входа с sample API закрыта. 19 октября выпущен Danygramm dev4 с новым меню микрофона и иконкой истребителя. Сборка, обновление без сброса данных, пять целевых проверок и полное скачивание APK подтверждены. Переписка/файлы и качество реальных звонков остаются в прежнем объёме без новых утверждений.
 
 - [x] `miccontrol-qxv` — **completed**: отдельный Android пакет, локальная подпись, сборка arm64 и инструкция; проверены manifest, подпись и содержимое APK.

@@ -53,6 +53,15 @@ import java.util.Objects;
 import java.util.Set;
 
 public class TranslateController extends BaseController {
+    private final java.util.HashMap<Long, Integer> localDisplaySessions = new java.util.HashMap<>();
+    public void attachLocalDisplay(long dialogId) {
+        cancelTranslations(dialogId);
+        localDisplaySessions.put(dialogId, localDisplaySessions.getOrDefault(dialogId, 0) + 1);
+    }
+    public void detachLocalDisplay(long dialogId) {
+        int count = localDisplaySessions.getOrDefault(dialogId, 0);
+        if (count <= 1) localDisplaySessions.remove(dialogId); else localDisplaySessions.put(dialogId, count - 1);
+    }
 
     public static final String UNKNOWN_LANGUAGE = "und";
 
@@ -224,7 +233,7 @@ public class TranslateController extends BaseController {
     }
 
     public boolean isTranslatingDialog(long dialogId) {
-        return isFeatureAvailable(dialogId) && translatingDialogs.get(dialogId, isChatAutoTranslated(dialogId));
+        return !localDisplaySessions.containsKey(dialogId) && isFeatureAvailable(dialogId) && translatingDialogs.get(dialogId, isChatAutoTranslated(dialogId));
     }
 
     public void toggleTranslatingDialog(long dialogId) {
@@ -579,6 +588,7 @@ public class TranslateController extends BaseController {
         }
 
         final long dialogId = messageObject.getDialogId();
+        if (localDisplaySessions.containsKey(dialogId)) return;
 
         if (onScreen && messageObject.messageOwner.summarizedOpen && messageObject.messageOwner.summaryText == null && !isTranslatingDialog(messageObject.getDialogId())) {
             final MessageObject finalMessageObject = messageObject;

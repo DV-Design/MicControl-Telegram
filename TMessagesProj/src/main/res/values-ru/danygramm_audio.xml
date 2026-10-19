@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammNoiseSuppression">Шумоподавление</string>
+    <string name="DanygrammNoEffects">Без эффектов</string>
+    <string name="DanygrammIsolationInfo">Усиленная изоляция голоса для шумного окружения.</string>
+    <string name="DanygrammNoiseSuppressionInfo">Уменьшение постоянного фонового шума с обычной обработкой голоса.</string>
+    <string name="DanygrammNoEffectsInfo">Без шумоподавления, изоляции голоса и автоматического усиления.</string>
+    <string name="DanygrammModesInfo">Для личных аудио- и видеозвонков. Защита от эха сохраняется. Гарнитура может дополнительно обрабатывать звук.</string>
+</resources>

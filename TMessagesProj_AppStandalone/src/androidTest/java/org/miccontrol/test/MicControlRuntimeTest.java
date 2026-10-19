@@ -190,7 +190,8 @@ public class MicControlRuntimeTest {
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         boolean hadPreference = preferences.contains(VOICE_ISOLATION_KEY);
         boolean originalPreference = preferences.getBoolean(VOICE_ISOLATION_KEY, false);
-        boolean originalMode = SharedConfig.voiceIsolationEnabled;
+        Object originalIntPreference = preferences.getAll().get("danygrammMicrophoneMode");
+        int originalMode = SharedConfig.microphoneMode;
         try {
             for (int i = 0; i < 50; i++) {
                 boolean enabled = (i & 1) == 0;
@@ -200,13 +201,18 @@ public class MicControlRuntimeTest {
                 assertEquals(enabled, preferences.getBoolean(VOICE_ISOLATION_KEY, !enabled));
             }
         } finally {
-            SharedConfig.setVoiceIsolationEnabled(originalMode);
-            NativeInstance.setVoiceIsolationEnabled(originalMode);
+            SharedConfig.setMicrophoneMode(originalMode);
+            NativeInstance.setMicrophoneMode(originalMode);
             SharedPreferences.Editor editor = preferences.edit();
             if (hadPreference) {
                 editor.putBoolean(VOICE_ISOLATION_KEY, originalPreference);
             } else {
                 editor.remove(VOICE_ISOLATION_KEY);
+            }
+            if (originalIntPreference == null) {
+                editor.remove("danygrammMicrophoneMode");
+            } else {
+                editor.putInt("danygrammMicrophoneMode", (Integer) originalIntPreference);
             }
             assertTrue("restore preference to disk", editor.commit());
         }

@@ -3670,9 +3670,66 @@ public class MessageObject {
     }
 
     public boolean translated = false;
+    private String localTranslationSource, localTranslationText;
+    private Object localTranslationOwner;
+    private boolean captionLocalTranslation;
+
+    public boolean hasLocalTranslation() {
+        return hasValidLocalTranslation() && !messageOwner.summarizedOpen;
+    }
+
+    private boolean hasValidLocalTranslation() {
+        return localTranslationText != null && messageOwner != null && !messageOwner.out && !isOutOwner()
+                && TextUtils.equals(localTranslationSource, messageOwner.message);
+    }
+
+    boolean hasLocalTranslation(Object owner) {
+        return localTranslationOwner == owner && hasLocalTranslation();
+    }
+
+    public void setLocalTranslation(String source, String text) {
+        setLocalTranslation(source, text, null);
+    }
+
+    void setLocalTranslation(String source, String text, Object owner) {
+        if (messageOwner == null || messageOwner.out || isOutOwner()
+                || TextUtils.isEmpty(text) || !TextUtils.equals(source, messageOwner.message)) return;
+        localTranslationSource = source;
+        localTranslationText = text;
+        localTranslationOwner = owner;
+        forceUpdate = true;
+        updateTranslation(true);
+    }
+
+    void clearLocalTranslation(Object owner) {
+        if (localTranslationOwner == owner) clearLocalTranslation();
+    }
+
+    public void clearLocalTranslation() {
+        if (localTranslationText == null) return;
+        localTranslationSource = localTranslationText = null;
+        localTranslationOwner = null;
+        forceUpdate = true;
+        translated = summarized = false;
+        caption = null;
+        if (messageOwner != null) updateTranslation(true);
+    }
     public boolean summarized = false;
     public boolean updateTranslation(boolean force) {
         boolean replyUpdated = replyMessageObject != null && replyMessageObject != this && replyMessageObject.updateTranslation(force);
+        if (hasLocalTranslation()) {
+            boolean changed = !TextUtils.equals(messageText, localTranslationText);
+            if (force || changed) {
+                translated = summarized = false;
+                applyNewText(localTranslationText);
+                caption = null;
+                generateCaption();
+            }
+            return replyUpdated || changed;
+        } else if (localTranslationText != null && !hasValidLocalTranslation()) {
+            clearLocalTranslation();
+            return true;
+        }
         TranslateController translateController = MessagesController.getInstance(currentAccount).getTranslateController();
         final TLRPC.TL_textWithEntities translatedText = messageOwner != null ? (messageOwner.voiceTranscriptionOpen ? messageOwner.translatedVoiceTranscription : messageOwner.translatedText) : null;
         final TLRPC.TL_textWithEntities summarizedText = messageOwner != null && messageOwner.summarizedOpen ? messageOwner.summaryText : null;
@@ -7630,6 +7687,7 @@ public class MessageObject {
     public void generateCaption() {
         if (isRoundVideo()) return;
         if (caption != null &&
+            hasLocalTranslation() == captionLocalTranslation &&
             (translated && (messageOwner.translatedText != null || summarized && messageOwner.translatedSummaryText != null)) == captionTranslated &&
             summarized == captionSummarized
         ) {
@@ -7637,6 +7695,7 @@ public class MessageObject {
         }
         String text = messageOwner.message;
         ArrayList<TLRPC.MessageEntity> entities = messageOwner.entities;
+        captionLocalTranslation = hasLocalTranslation();
         boolean forceManualEntities = false;
         if (type == TYPE_STORY) {
             if (messageOwner.media != null && messageOwner.media.storyItem != null) {
@@ -7650,7 +7709,11 @@ public class MessageObject {
         } else if (hasExtendedMedia()) {
             text = messageOwner.message = messageOwner.media.description;
         }
-        if (messageOwner.translatedSummaryText != null && summarized && translated) {
+        if (hasLocalTranslation()) {
+            text = localTranslationText;
+            entities = new ArrayList<>();
+            captionSummarized = captionTranslated = false;
+        } else if (messageOwner.translatedSummaryText != null && summarized && translated) {
             captionSummarized = true;
             captionTranslated = true;
             text = messageOwner.translatedSummaryText.text;
@@ -8000,6 +8063,7 @@ public class MessageObject {
 
     public ArrayList<TLRPC.MessageEntity> getEntities() {
         if (messageOwner == null) return null;
+        if (hasLocalTranslation()) return new ArrayList<>();
         if (summarized) {
             if (translated && messageOwner.translatedSummaryText != null) {
                 return messageOwner.translatedSummaryText.entities;

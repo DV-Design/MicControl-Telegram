@@ -187,6 +187,7 @@ public class WebRtcAudioEffects {
   // of the NS effect is modified. Returns true if HW NS is supported and
   // false otherwise.
   public boolean setNS(boolean enable) {
+    if (org.telegram.messenger.voip.NativeInstance.personalCaptureProcessing) enable = false;
     Logging.d(TAG, "setNS(" + enable + ")");
     if (!canUseNoiseSuppressor()) {
       Logging.w(TAG, "Platform NS is not supported");
@@ -244,7 +245,8 @@ public class WebRtcAudioEffects {
       ns = NoiseSuppressor.create(audioSession);
       if (ns != null) {
         boolean enabled = ns.getEnabled();
-        boolean enable = shouldEnableNs && canUseNoiseSuppressor() && !SharedConfig.disableVoiceAudioEffects;
+        boolean enable = shouldEnableNs && canUseNoiseSuppressor() && !SharedConfig.disableVoiceAudioEffects
+            && !org.telegram.messenger.voip.NativeInstance.personalCaptureProcessing;
         if (ns.setEnabled(enable) != AudioEffect.SUCCESS) {
           Logging.e(TAG, "Failed to set the NoiseSuppressor state");
         }

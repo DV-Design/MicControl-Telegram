@@ -54,12 +54,16 @@ public class MicrophoneModeSheet extends BottomSheet {
     };
 
     public interface OnModeSelectedListener {
-        void onModeSelected(boolean voiceIsolationEnabled);
+        void onModeSelected(int mode);
     }
 
-    private final RadioColorCell[] modeCells = new RadioColorCell[2];
+    private final RadioColorCell[] modeCells = new RadioColorCell[3];
 
-    public MicrophoneModeSheet(Context context, boolean voiceIsolationEnabled, OnModeSelectedListener listener) {
+    public static int modeName(int mode) {
+        return mode == 2 ? R.string.MicControlVoiceIsolation : mode == 0 ? R.string.DanygrammNoEffects : R.string.DanygrammNoiseSuppression;
+    }
+
+    public MicrophoneModeSheet(Context context, int microphoneMode, OnModeSelectedListener listener) {
         super(context, false, DARK_RESOURCES);
         setBackgroundColor(BACKGROUND);
         fixNavigationBar(BACKGROUND);
@@ -81,14 +85,13 @@ public class MicrophoneModeSheet extends BottomSheet {
                 24, 0, 24, 16));
 
         for (int i = 0; i < modeCells.length; i++) {
-            final boolean isolation = i == 1;
-            final String name = LocaleController.getString(isolation
-                    ? R.string.MicControlVoiceIsolation : R.string.MicControlStandard);
-            final String description = LocaleController.getString(isolation
-                    ? R.string.MicControlVoiceIsolationInfo : R.string.MicControlStandardInfo);
+            final int mode = 2 - i;
+            final String name = LocaleController.getString(modeName(mode));
+            final String description = LocaleController.getString(mode == 2 ? R.string.DanygrammIsolationInfo
+                    : mode == 1 ? R.string.DanygrammNoiseSuppressionInfo : R.string.DanygrammNoEffectsInfo);
             RadioColorCell cell = modeCells[i] = new RadioColorCell(context, DARK_RESOURCES);
             cell.setCheckColor(RADIO, ACCENT);
-            cell.setTextAndText2AndValue(name, description, isolation == voiceIsolationEnabled);
+            cell.setTextAndText2AndValue(name, description, mode == microphoneMode);
             cell.setContentDescription(name + ". " + description);
             cell.setFocusable(true);
             for (int child = 0; child < cell.getChildCount(); child++) {
@@ -97,17 +100,17 @@ public class MicrophoneModeSheet extends BottomSheet {
             content.addView(cell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
                     12, 0, 12, 4));
             cell.setOnClickListener(v -> {
-                updateSelection(isolation);
+                updateSelection(mode);
                 if (listener != null) {
-                    listener.onModeSelected(isolation);
+                    listener.onModeSelected(mode);
                 }
                 dismiss();
             });
         }
-        updateSelection(voiceIsolationEnabled);
+        updateSelection(microphoneMode);
 
         TextView hint = new TextView(context);
-        hint.setText(LocaleController.getString(R.string.MicControlPrivateCallsInfo));
+        hint.setText(LocaleController.getString(R.string.DanygrammModesInfo));
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         hint.setTextColor(SECONDARY_TEXT);
         hint.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);
@@ -116,9 +119,9 @@ public class MicrophoneModeSheet extends BottomSheet {
         setCustomView(content);
     }
 
-    private void updateSelection(boolean voiceIsolationEnabled) {
+    private void updateSelection(int mode) {
         for (int i = 0; i < modeCells.length; i++) {
-            boolean selected = (i == 1) == voiceIsolationEnabled;
+            boolean selected = 2 - i == mode;
             modeCells[i].setChecked(selected, false);
             modeCells[i].setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(12),
                     selected ? SELECTED_BACKGROUND : BACKGROUND, PRESSED_BACKGROUND));

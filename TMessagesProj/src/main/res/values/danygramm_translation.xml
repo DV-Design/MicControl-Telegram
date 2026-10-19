@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammTranslateTitle">On-screen translation</string>
+    <string name="DanygrammTranslateEnable">Translate incoming messages</string>
+    <string name="DanygrammTranslateOriginal">Show original messages</string>
+    <string name="DanygrammTranslateOriginalStatus">Original messages</string>
+    <string name="DanygrammTranslateLanguage">Translate to</string>
+    <string name="DanygrammTranslateInfo">Translate received messages and captions on this device. Originals and outgoing messages stay unchanged. Language models download as needed (about 30 MB per language, up to four languages); translation then works offline. Tap the chat banner to show originals or change language. Showing originals stops translation; an already started model download may finish in the background.</string>
+    <string name="DanygrammTranslateReady">On-device translation</string>
+    <string name="DanygrammTranslateWorking">Translating on this device…</string>
+    <string name="DanygrammTranslateModels">Preparing models; waiting for download…</string>
+    <string name="DanygrammTranslateUnsupported">Language could not be identified or is unsupported; original shown.</string>
+    <string name="DanygrammTranslateFailed">Translation unavailable. Check your connection, Wi-Fi and free space, then tap Retry. Original messages are preserved.</string>
+    <string name="DanygrammTranslateModelLimit">Up to four downloaded languages are kept on this device. Delete translation models before downloading another language.</string>
+    <string name="DanygrammTranslateWifi">Model downloads: Wi-Fi only</string>
+    <string name="DanygrammTranslateAnyNetwork">Model downloads: any network</string>
+    <string name="DanygrammTranslateMobileConfirm">Allow model downloads using mobile data? Each language uses about 30 MB. Mobile data charges may apply. A download already waiting for Wi-Fi may still need Wi-Fi.</string>
+    <string name="DanygrammTranslateRetry">Retry translation</string>
+    <string name="DanygrammTranslateDeleteModels">Delete downloaded translation models</string>
+    <string name="DanygrammTranslateDeleteInfo">Translation will be turned off for this chat. Downloaded translation models are shared between chats and will need to be downloaded again.</string>
+</resources>

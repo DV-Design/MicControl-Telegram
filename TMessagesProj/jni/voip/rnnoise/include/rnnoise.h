@@ -93,6 +93,10 @@ RNNOISE_EXPORT void rnnoise_destroy(DenoiseState *st);
  */
 RNNOISE_EXPORT float rnnoise_process_frame(DenoiseState *st, float *out, const float *in);
 
+/* Danygramm: exponent 1 is upstream behaviour; >1 increases spectral attenuation.
+ * The upstream entry point is unchanged for group/conference calls. */
+RNNOISE_EXPORT float rnnoise_process_frame_strength(DenoiseState *st, float *out, const float *in, float strength);
+
 /**
  * Load a model from a file
  *

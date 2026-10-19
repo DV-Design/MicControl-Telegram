@@ -25,10 +25,14 @@ rtc::scoped_refptr<AudioProcessing> AudioProcessingBuilder::Create() {
   // Return a null pointer when the APM is excluded from the build.
   return nullptr;
 #else  // WEBRTC_EXCLUDE_AUDIO_PROCESSING_MODULE
-  return rtc::make_ref_counted<AudioProcessingImpl>(
-      config_, miccontrol::WrapCapturePostProcessor(std::move(capture_post_processing_)),
+  auto processor = miccontrol::WrapCapturePostProcessor(std::move(capture_post_processing_));
+  const bool managed = miccontrol::IsManagedCaptureProcessor(processor.get());
+  auto processing = rtc::make_ref_counted<AudioProcessingImpl>(
+      config_, std::move(processor),
       std::move(render_pre_processing_), std::move(echo_control_factory_),
       std::move(echo_detector_), std::move(capture_analyzer_));
+  if (managed) miccontrol::RegisterAudioProcessing(processing.get());
+  return processing;
 #endif
 }
 

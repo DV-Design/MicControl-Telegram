@@ -81,8 +81,8 @@ abstract class TelegramStringsTask : DefaultTask() {
             "other"
         )
 
-        // The plugin runs on the application now, so the default localization
-        // is composed from two values/strings.xml files.
+        // Merge default string files from the library and application, including
+        // Danygramm's feature files. Later application definitions remain overlays.
         val defaultLocalizationFiles = stringsXml.files.toList()
 
 

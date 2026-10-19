@@ -11,11 +11,15 @@ from pathlib import Path
 import shlex
 import subprocess
 import tempfile
+import wave
+import struct
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sanitize", action="store_true")
+    parser.add_argument("--speech-wav", type=Path,
+                        help="optional clean speech fixture: 48 kHz mono PCM16 WAV")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     jni = root / "TMessagesProj/jni"
@@ -61,7 +65,20 @@ def main():
             objects.append(str(target))
         executable = str(Path(build) / "voice_isolation_test")
         subprocess.run(cxx + flags + objects + ["-o", executable], check=True)
-        subprocess.run([executable], check=True)
+        test_args = [executable]
+        if args.speech_wav:
+            with wave.open(str(args.speech_wav), "rb") as speech:
+                if (speech.getframerate(), speech.getnchannels(), speech.getsampwidth(),
+                        speech.getcomptype()) != (48000, 1, 2, "NONE"):
+                    parser.error("--speech-wav must be uncompressed 48 kHz mono PCM16")
+                pcm = speech.readframes(speech.getnframes())
+            # The C++ runner receives actual PCM amplitudes, never normalized [-1, 1].
+            raw = Path(build) / "speech.f32"
+            with raw.open("wb") as output:
+                for (sample,) in struct.iter_unpack("<h", pcm):
+                    output.write(struct.pack("=f", float(sample)))
+            test_args.append(str(raw))
+        subprocess.run(test_args, check=True)
 
 
 if __name__ == "__main__":

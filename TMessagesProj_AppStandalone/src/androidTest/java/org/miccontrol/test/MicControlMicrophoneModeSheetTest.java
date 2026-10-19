@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.ActionBar.Theme;
@@ -53,7 +54,7 @@ import java.util.function.BooleanSupplier;
 @RunWith(AndroidJUnit4.class)
 public class MicControlMicrophoneModeSheetTest {
     private static final String TAG = "MicControlSheetTest";
-    private static final String MODE_KEY = "miccontrolVoiceIsolation";
+    private static final String MODE_KEY = "danygrammMicrophoneMode";
 
     @BeforeClass
     public static void initializeApplication() {
@@ -66,30 +67,33 @@ public class MicControlMicrophoneModeSheetTest {
     }
 
     @Test
-    public void lightThemeStandardIsReadableAndCanSelectIsolation() throws Exception {
-        exerciseSheet("Blue", false);
+    public void lightThemeNoiseSuppressionIsReadableAndCanSelectIsolation() throws Exception {
+        exerciseSheet("Blue", 1);
     }
 
     @Test
-    public void lightThemeIsolationIsReadableAndCanSelectStandard() throws Exception {
-        exerciseSheet("Blue", true);
+    public void lightThemeIsolationIsReadableAndCanSelectNoEffects() throws Exception {
+        exerciseSheet("Blue", 2);
     }
 
     @Test
-    public void darkThemeStandardIsReadableAndCanSelectIsolation() throws Exception {
-        exerciseSheet("Dark Blue", false);
+    public void darkThemeNoiseSuppressionIsReadableAndCanSelectIsolation() throws Exception {
+        exerciseSheet("Dark Blue", 1);
     }
 
     @Test
-    public void darkThemeIsolationIsReadableAndCanSelectStandard() throws Exception {
-        exerciseSheet("Dark Blue", true);
+    public void darkThemeIsolationIsReadableAndCanSelectNoEffects() throws Exception {
+        exerciseSheet("Dark Blue", 2);
     }
 
-    private static void exerciseSheet(String themeName, boolean initialIsolation) throws Exception {
+    @Test public void lightThemeNoEffectsIsReadable() throws Exception { exerciseSheet("Blue", 0); }
+    @Test public void darkThemeNoEffectsIsReadable() throws Exception { exerciseSheet("Dark Blue", 0); }
+
+    private static void exerciseSheet(String themeName, int initialMode) throws Exception {
         String label = (themeName.equals("Blue") ? "light" : "dark")
-                + (initialIsolation ? "-isolation" : "-standard");
+                + "-mode-" + initialMode;
         AtomicReference<MicrophoneModeSheet> sheet = new AtomicReference<>();
-        AtomicReference<Boolean> selectedMode = new AtomicReference<>();
+        AtomicReference<Integer> selectedMode = new AtomicReference<>();
         AtomicInteger callbacks = new AtomicInteger();
         AtomicInteger dismissals = new AtomicInteger();
         CountDownLatch selected = new CountDownLatch(1);
@@ -106,7 +110,7 @@ public class MicControlMicrophoneModeSheetTest {
                     assertEquals("requested global theme must actually be applied",
                             !themeName.equals("Blue"), Theme.isCurrentThemeDark());
                     MicrophoneModeSheet dialog = new MicrophoneModeSheet(activity,
-                            initialIsolation, enabled -> {
+                            initialMode, enabled -> {
                                 selectedMode.set(enabled);
                                 callbacks.incrementAndGet();
                                 selected.countDown();
@@ -126,7 +130,7 @@ public class MicControlMicrophoneModeSheetTest {
                         && dialog.getWindow().getDecorView().hasWindowFocus());
                 TestActivitySession.onMain("initial radio semantics", () ->
                         assertSelection(findViews(dialog.getContainerView(), RadioColorCell.class),
-                                initialIsolation));
+                                initialMode));
 
                 UiAutomation automation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
                 Bitmap screenshot = automation.takeScreenshot();
@@ -143,7 +147,7 @@ public class MicControlMicrophoneModeSheetTest {
                 int[] target = new int[2];
                 TestActivitySession.onMain("tap target", () -> {
                     List<RadioColorCell> rows = findViews(dialog.getContainerView(), RadioColorCell.class);
-                    RadioColorCell row = rows.get(initialIsolation ? 0 : 1);
+                    RadioColorCell row = rows.get(2 - (initialMode + 1) % 3);
                     Rect bounds = visibleBounds(row);
                     target[0] = bounds.centerX();
                     target[1] = bounds.centerY();
@@ -154,11 +158,11 @@ public class MicControlMicrophoneModeSheetTest {
                 assertTrue("dialog did not dismiss after selection", dismissed.await(15, TimeUnit.SECONDS));
                 TestActivitySession.onMain("selection and dismissal", () -> {
                     assertEquals("selection callback count", 1, callbacks.get());
-                    assertEquals("selected mode callback", !initialIsolation, selectedMode.get());
+                    assertEquals("selected mode callback", Integer.valueOf((initialMode + 1) % 3), selectedMode.get());
                     // Android omits View accessibility metadata once the window is detached.
                     // Attached radio semantics were checked before tapping; retain state here.
                     assertCheckedState(findViews(dialog.getContainerView(), RadioColorCell.class),
-                            !initialIsolation);
+                            (initialMode + 1) % 3);
                     assertEquals("dismiss callback count", 1, dismissals.get());
                     assertFalse("dialog window remains showing", dialog.isShowing());
                     assertFalse("dialog window remains attached",
@@ -166,7 +170,7 @@ public class MicControlMicrophoneModeSheetTest {
                     original.assertModeUnchanged();
                 });
                 Log.i(TAG, String.format(Locale.ROOT,
-                        "%s textCount=6 minContrast=%.2f touchCallback=true checkedState=true dismissed=true",
+                        "%s textCount=8 minContrast=%.2f touchCallback=true checkedState=true dismissed=true",
                         label, minimumContrast[0]));
             } finally {
                 boolean[] needsDismissal = {false};
@@ -186,11 +190,11 @@ public class MicControlMicrophoneModeSheetTest {
         }
     }
 
-    private static void assertSelection(List<RadioColorCell> rows, boolean isolation) {
-        assertCheckedState(rows, isolation);
+    private static void assertSelection(List<RadioColorCell> rows, int mode) {
+        assertCheckedState(rows, mode);
         for (int i = 0; i < rows.size(); i++) {
             RadioColorCell row = rows.get(i);
-            boolean expected = (i == 1) == isolation;
+            boolean expected = 2 - i == mode;
             assertTrue("choice must be clickable and focusable", row.isClickable() && row.isFocusable());
             assertTrue("touch target height below 48dp", row.getHeight() >= AndroidUtilities.dp(48));
             assertTrue("touch target width below 48dp", row.getWidth() >= AndroidUtilities.dp(48));
@@ -212,19 +216,27 @@ public class MicControlMicrophoneModeSheetTest {
         }
     }
 
-    private static void assertCheckedState(List<RadioColorCell> rows, boolean isolation) {
-        assertEquals("two microphone choices", 2, rows.size());
+    private static void assertCheckedState(List<RadioColorCell> rows, int mode) {
+        assertEquals("three microphone choices", 3, rows.size());
         for (int i = 0; i < rows.size(); i++) {
-            assertEquals("radio selection " + i, (i == 1) == isolation, rows.get(i).isChecked());
+            assertEquals("radio selection " + i, 2 - i == mode, rows.get(i).isChecked());
         }
     }
 
     private static double assertRenderedTextContrast(MicrophoneModeSheet dialog, Bitmap screenshot) {
         List<TextView> texts = findViews(dialog.getContainerView(), TextView.class);
-        assertEquals("title, two labels, two descriptions and hint", 6, texts.size());
+        assertEquals("title, three labels, three descriptions and hint", 8, texts.size());
+        List<String> displayed = new ArrayList<>();
+        for (TextView text : texts) displayed.add(text.getText().toString());
+        boolean russian = "ru".equals(LocaleController.getInstance().getCurrentLocale().getLanguage());
+        // Literal expectations are independent of LocaleController: comparing
+        // against getString() again would accept the same broken LOC_ERR value.
+        assertTrue("noise suppression label missing", displayed.contains(russian ? "Шумоподавление" : "Noise suppression"));
+        assertTrue("no effects label missing", displayed.contains(russian ? "Без эффектов" : "No effects"));
         double minimum = Double.POSITIVE_INFINITY;
         for (TextView text : texts) {
             assertTrue("empty displayed label", text.getText().length() > 0);
+            assertFalse("unresolved localization displayed: " + text.getText(), text.getText().toString().contains("LOC_ERR"));
             Rect bounds = visibleBounds(text);
             assertEquals("text clipped horizontally", text.getWidth(), bounds.width());
             assertEquals("text clipped vertically", text.getHeight(), bounds.height());
@@ -313,7 +325,7 @@ public class MicControlMicrophoneModeSheetTest {
         private Theme.ThemeInfo active;
         private boolean night;
         private int autoNight;
-        private boolean mode;
+        private int mode;
         private Object persistedMode;
         private Object persistedTheme;
 
@@ -322,14 +334,14 @@ public class MicControlMicrophoneModeSheetTest {
             active = Theme.getActiveTheme();
             night = Theme.isCurrentThemeNight();
             autoNight = Theme.selectedAutoNightType;
-            mode = SharedConfig.voiceIsolationEnabled;
+            mode = SharedConfig.microphoneMode;
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
             persistedMode = preferences.getAll().get(MODE_KEY);
             persistedTheme = preferences.getAll().get("theme");
         }
 
         void assertModeUnchanged() {
-            assertEquals("component test changed global microphone mode", mode, SharedConfig.voiceIsolationEnabled);
+            assertEquals("component test changed global microphone mode", mode, SharedConfig.microphoneMode);
             assertEquals("component test persisted a microphone change", persistedMode,
                     MessagesController.getGlobalMainSettings().getAll().get(MODE_KEY));
         }

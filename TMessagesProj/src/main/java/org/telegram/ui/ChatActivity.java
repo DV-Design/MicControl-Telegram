@@ -455,6 +455,45 @@ public class ChatActivity extends BaseFragment implements
     protected ActionBarMenuItem searchItem;
     protected ActionBarMenuItem topicCreateItem;
     private ActionBarMenuItem.Item translateItem;
+    private org.telegram.messenger.LocalChatTranslation localTranslation;
+    private TextView localTranslationBanner;
+    private final Runnable localTranslationRefresh = this::refreshLocalTranslationUI;
+
+    private void ensureLocalTranslation() {
+        if (!isFinished && chatMode == 0 && localTranslation == null && getDialogId() != 0) {
+            localTranslation = new org.telegram.messenger.LocalChatTranslation(currentAccount, getDialogId(), () -> {
+                AndroidUtilities.cancelRunOnUIThread(localTranslationRefresh);
+                AndroidUtilities.runOnUIThread(localTranslationRefresh, 60);
+            });
+        }
+    }
+    private void refreshLocalTranslationUI() {
+        if (isFinished || isPaused || localTranslation == null || getContext() == null
+                || chatListView == null || topPanelLayout == null) return;
+        if (localTranslation.isSelectedInThisSession() && localTranslationBanner == null) {
+            localTranslationBanner = new TextView(getContext());
+            localTranslationBanner.setGravity(Gravity.CENTER);
+            localTranslationBanner.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            localTranslationBanner.setSingleLine(true);
+            localTranslationBanner.setEllipsize(TextUtils.TruncateAt.END);
+            localTranslationBanner.setPadding(dp(12), 0, dp(12), 0);
+            localTranslationBanner.setOnClickListener(view -> org.telegram.ui.Components.LocalTranslationOptions.show(this, localTranslation));
+            topPanelLayout.addView(localTranslationBanner, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
+            topPanelLayout.setPriority(localTranslationBanner, 13);
+        }
+        if (localTranslationBanner != null) {
+            localTranslationBanner.setTextColor(getThemedColor(Theme.key_chat_topPanelTitle));
+            localTranslationBanner.setText(getString(localTranslation.isEnabled()
+                    ? localTranslation.statusResource() : R.string.DanygrammTranslateOriginalStatus) + " · "
+                    + org.telegram.ui.Components.LocalTranslationOptions.languageName(localTranslation.targetLanguage()));
+            topPanelLayout.setViewVisible(localTranslationBanner, localTranslation.isSelectedInThisSession(), true);
+        }
+        checkTranslationRunnable.run();
+        saveGeneralScroll();
+        updateVisibleRows();
+        updateTopPanel(true);
+        checkListViewPaddings();
+    }
     private ActionBarMenuItem searchIconItem;
     private ActionBarMenu.LazyItem audioCallIconItem;
     private boolean searchItemVisible;
@@ -3401,6 +3440,9 @@ public class ChatActivity extends BaseFragment implements
 
     @Override
     public void onFragmentDestroy() {
+        AndroidUtilities.cancelRunOnUIThread(localTranslationRefresh);
+        AndroidUtilities.cancelRunOnUIThread(checkTranslationRunnable);
+        if (localTranslation != null) { localTranslation.close(); localTranslation = null; }
         super.onFragmentDestroy();
         if (messageMetricsView != null) {
             messageMetricsView.finish();
@@ -4014,6 +4056,9 @@ public class ChatActivity extends BaseFragment implements
                     if (!getMessagesController().getTranslateController().toggleTranslatingDialog(getDialogId(), true)) {
                         updateTopPanel(true);
                     }
+                } else if (id == 2329) {
+                    ensureLocalTranslation();
+                    if (localTranslation != null) org.telegram.ui.Components.LocalTranslationOptions.show(ChatActivity.this, localTranslation);
                 } else if (id == call || id == video_call) {
                     if (currentUser != null && getParentActivity() != null) {
                         VoIPHelper.startCall(currentUser, id == video_call, userInfo != null && userInfo.video_calls_available, getParentActivity(), getMessagesController().getUserFull(currentUser.id), getAccountInstance());
@@ -4469,6 +4514,7 @@ public class ChatActivity extends BaseFragment implements
                 headerItem.lazilyAddSubItem(boost_group, drawable, LocaleController.getString(ChatObject.isChannelAndNotMegaGroup(currentChat) ? R.string.BoostingBoostChannelMenu : R.string.BoostingBoostGroupMenu));
             }
             translateItem = headerItem.lazilyAddSubItem(translate, R.drawable.msg_translate, LocaleController.getString(R.string.TranslateMessage));
+            if (chatMode == 0) headerItem.lazilyAddSubItem(2329, R.drawable.msg_translate, getString(R.string.DanygrammTranslateTitle));
             updateTranslateItemVisibility();
             if (currentChat != null && !currentChat.creator && !ChatObject.hasAdminRights(currentChat)) {
                 headerItem.lazilyAddSubItem(report, R.drawable.msg_report, LocaleController.getString(R.string.ReportChat));
@@ -7188,6 +7234,7 @@ public class ChatActivity extends BaseFragment implements
         restartTopicButton = null;
         closeReportSpam = null;
         translateButton = null;
+        localTranslationBanner = null;
         addProfilePictureButton = null;
         topicsTabs = null;
         botAdView = null;
@@ -24937,20 +24984,27 @@ public class ChatActivity extends BaseFragment implements
         AndroidUtilities.runOnUIThread(checkTranslationRunnable, force ? 0 : 150);
     }
     private Runnable checkTranslationRunnable = () -> {
+        if (isFinished || isPaused) return;
+        ensureLocalTranslation();
+        if (localTranslation != null) localTranslation.beginVisiblePass();
         lastTranslationCheck = System.currentTimeMillis();
         if (chatListView != null && chatAdapter != null) {
+            final java.util.HashSet<MessageObject> localVisible = new java.util.HashSet<>();
             int minId = Integer.MAX_VALUE, maxId = Integer.MIN_VALUE;
             for (int i = 0; i < chatListView.getChildCount(); ++i) {
                 View child = chatListView.getChildAt(i);
                 if (child instanceof ChatMessageCell) {
                     ChatMessageCell cell = (ChatMessageCell) child;
+                    boolean intersectsViewport = child.getBottom() > 0 && child.getTop() < chatListView.getHeight();
                     if (cell.getCurrentMessagesGroup() != null) {
                         for (int j = 0; j < cell.getCurrentMessagesGroup().messages.size(); ++j) {
                             final int mid = cell.getCurrentMessagesGroup().messages.get(j).getId();
+                            if (intersectsViewport) localVisible.add(cell.getCurrentMessagesGroup().messages.get(j));
                             minId = Math.min(minId, mid);
                             maxId = Math.max(maxId, mid);
                         }
                     } else if (cell.getMessageObject() != null) {
+                        if (intersectsViewport) localVisible.add(cell.getMessageObject());
                         final int mid = cell.getMessageObject().getId();
                         minId = Math.min(minId, mid);
                         maxId = Math.max(maxId, mid);
@@ -24972,6 +25026,7 @@ public class ChatActivity extends BaseFragment implements
                                     getMessagesController().getTranslateController().checkTranslation(
                                         messageObject1, mid >= minId - 7 && mid <= maxId + 7
                                     );
+                                    if (localTranslation != null) localTranslation.check(messageObject1, localVisible.contains(messageObject1));
                                 }
                             }
                             groupsChecked.add(group.groupId);
@@ -24981,6 +25036,7 @@ public class ChatActivity extends BaseFragment implements
                         getMessagesController().getTranslateController().checkTranslation(
                             messageObject, mid >= minId - 7 && mid <= maxId + 7
                         );
+                        if (localTranslation != null) localTranslation.check(messageObject, localVisible.contains(messageObject));
                     }
                 }
             }
@@ -29238,7 +29294,7 @@ public class ChatActivity extends BaseFragment implements
         }
 
         boolean showRestartTopic = !isInPreviewMode() && forumTopic != null && forumTopic.closed && !forumTopic.hidden && ChatObject.canManageTopic(currentAccount, currentChat, forumTopic);
-        boolean showTranslate = (
+        boolean showTranslate = (localTranslation == null || !localTranslation.isSelectedInThisSession()) && (
             getUserConfig().isPremium() || currentChat != null && currentChat.autotranslation ?
                 getMessagesController().getTranslateController().isDialogTranslatable(getDialogId()) && !getMessagesController().getTranslateController().isTranslateDialogHidden(getDialogId()) :
                 !getMessagesController().premiumFeaturesBlocked() && preferences.getInt("dialog_show_translate_count" + did, 5) <= 0
@@ -29880,6 +29936,9 @@ public class ChatActivity extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        ensureLocalTranslation();
+        if (localTranslation != null) localTranslation.setActive(true);
+        AndroidUtilities.runOnUIThread(localTranslationRefresh, 100);
         checkShowBlur(false);
         activityResumeTime = System.currentTimeMillis();
         if (openImport && getSendMessagesHelper().getImportingHistory(dialog_id) != null) {
@@ -30092,6 +30151,9 @@ public class ChatActivity extends BaseFragment implements
     @Override
     public void onPause() {
         super.onPause();
+        if (localTranslation != null) localTranslation.setActive(false);
+        AndroidUtilities.cancelRunOnUIThread(localTranslationRefresh);
+        AndroidUtilities.cancelRunOnUIThread(checkTranslationRunnable);
         scrolling = false;
         if (scrimPopupWindow != null) {
             scrimPopupWindow.setPauseNotifications(false);
