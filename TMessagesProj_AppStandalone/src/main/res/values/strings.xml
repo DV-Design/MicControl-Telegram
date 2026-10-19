@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">MicControl</string>
+    <string name="AppName">Danygramm</string>
     <string name="SmsJobsMenu">SMS Statistics</string>
 
     <string name="SmsJobsPremiumHintTitle">Premium Subscription **for free**</string>

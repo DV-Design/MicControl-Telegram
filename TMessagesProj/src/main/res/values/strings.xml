@@ -11539,5 +11539,7 @@
     <string name="MicControlStandard">Standard</string>
     <string name="MicControlVoiceIsolation">Voice Isolation</string>
     <string name="MicControlMicrophoneMode">Microphone: %1$s</string>
-    <string name="MicControlVoiceIsolationInfo">Voice Isolation reduces background noise in your outgoing audio. Available in private voice and video calls.</string>
+    <string name="MicControlStandardInfo">Regular Telegram microphone processing.</string>
+    <string name="MicControlVoiceIsolationInfo">Reduces background noise in outgoing audio.</string>
+    <string name="MicControlPrivateCallsInfo">For private voice and video calls.</string>
 </resources>

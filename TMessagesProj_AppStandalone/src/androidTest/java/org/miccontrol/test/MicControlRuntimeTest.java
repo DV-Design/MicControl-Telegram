@@ -59,7 +59,7 @@ public class MicControlRuntimeTest {
         assertEquals(PACKAGE, context.getPackageName());
         PackageManager manager = context.getPackageManager();
         ApplicationInfo application = manager.getApplicationInfo(PACKAGE, 0);
-        assertEquals("MicControl", manager.getApplicationLabel(application).toString());
+        assertEquals("Danygramm", manager.getApplicationLabel(application).toString());
         assertEquals(ApplicationLoaderImpl.class.getName(), application.className);
 
         PackageInfo info = manager.getPackageInfo(PACKAGE, PackageManager.GET_PROVIDERS);

@@ -121,6 +121,7 @@ import org.telegram.ui.Components.voip.EmojiRationalLayout;
 import org.telegram.ui.Components.voip.HideEmojiTextView;
 import org.telegram.ui.Components.voip.ImageWithWavesView;
 import org.telegram.ui.Components.voip.EndCloseLayout;
+import org.telegram.ui.Components.voip.MicrophoneModeSheet;
 import org.telegram.ui.Components.voip.PrivateVideoPreviewDialogNew;
 import org.telegram.ui.Components.voip.RateCallLayout;
 import org.telegram.ui.Components.voip.VoIPBackgroundProvider;
@@ -183,6 +184,8 @@ public class VoIPFragment implements
 
     private VoIPStatusTextView statusTextView;
     private TextView microphoneModeView;
+    private MicrophoneModeSheet microphoneModeSheet;
+    private boolean isDestroyed;
     private ConferenceParticipantsView participantsView;
     private ImageView backIcon;
     private ImageView addIcon;
@@ -267,6 +270,9 @@ public class VoIPFragment implements
     ValueAnimator uiVisibilityAnimator;
     ValueAnimator.AnimatorUpdateListener statusbarAnimatorListener = valueAnimator -> {
         uiVisibilityAlpha = (float) valueAnimator.getAnimatedValue();
+        if (microphoneModeView != null) {
+            microphoneModeView.setAlpha(uiVisibilityAlpha);
+        }
         updateSystemBarColors();
     };
 
@@ -276,7 +282,7 @@ public class VoIPFragment implements
     Runnable hideUIRunnable = () -> {
         hideUiRunnableWaiting = false;
         boolean tapToVideoTooltipVisible = tapToVideoTooltip != null && tapToVideoTooltip.shown();
-        if (canHideUI && uiVisible && !emojiExpanded && !tapToVideoTooltipVisible) {
+        if (canHideUI && uiVisible && !emojiExpanded && !tapToVideoTooltipVisible && microphoneModeSheet == null) {
             lastContentTapTime = System.currentTimeMillis();
             showUi(false);
             previousState = currentState;
@@ -501,6 +507,7 @@ public class VoIPFragment implements
     private void setInsets(WindowInsets windowInsets) {
         lastInsets = windowInsets;
         ((FrameLayout.LayoutParams) buttonsLayout.getLayoutParams()).bottomMargin = lastInsets.getSystemWindowInsetBottom();
+        ((FrameLayout.LayoutParams) microphoneModeView.getLayoutParams()).bottomMargin = dp(88) + lastInsets.getSystemWindowInsetBottom();
         ((FrameLayout.LayoutParams) acceptDeclineView.getLayoutParams()).bottomMargin = lastInsets.getSystemWindowInsetBottom();
         ((FrameLayout.LayoutParams) backIcon.getLayoutParams()).topMargin = lastInsets.getSystemWindowInsetTop();
         ((FrameLayout.LayoutParams) addIcon.getLayoutParams()).topMargin = lastInsets.getSystemWindowInsetTop();
@@ -541,6 +548,10 @@ public class VoIPFragment implements
     }
 
     private void destroy() {
+        isDestroyed = true;
+        dismissMicrophoneModeSheet();
+        AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
+        hideUiRunnableWaiting = false;
         if (VoIPService.getSharedInstance() != null) {
             VoIPService.getSharedInstance().unregisterStateListener(this);
         }
@@ -1046,22 +1057,6 @@ public class VoIPFragment implements
         ViewCompat.setImportantForAccessibility(statusTextView, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         statusLayout.addView(statusTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 0, 0, 6));
 
-        microphoneModeView = new TextView(context) {
-            @Override
-            public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-                super.onInitializeAccessibilityNodeInfo(info);
-                info.setClassName(android.widget.Button.class.getName());
-            }
-        };
-        microphoneModeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        microphoneModeView.setTextColor(Color.WHITE);
-        microphoneModeView.setGravity(Gravity.CENTER);
-        microphoneModeView.setMinHeight(dp(44));
-        microphoneModeView.setPadding(dp(14), dp(6), dp(14), dp(6));
-        microphoneModeView.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(22), 0x26ffffff, 0x40ffffff));
-        microphoneModeView.setOnClickListener(v -> showMicrophoneModeDialog());
-        statusLayout.addView(microphoneModeView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 16, 2, 16, 6));
-
         if (state != null && state.getUser() != null && state.isConference() && state.getGroupCall() != null) {
             participantsView = new ConferenceParticipantsView(context);
             participantsView.set(currentAccount, state.getUser().id, state.getGroupParticipants(), state.getGroupCall().participants_count);
@@ -1174,6 +1169,26 @@ public class VoIPFragment implements
         frameLayout.addView(buttonsLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM));
         int horizontalMargin = isTablet() ? 100 : 27;
         frameLayout.addView(acceptDeclineView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 186, Gravity.BOTTOM, horizontalMargin, 0, horizontalMargin, 0));
+
+        microphoneModeView = new TextView(context) {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(info);
+                info.setClassName(android.widget.Button.class.getName());
+            }
+        };
+        microphoneModeView.setText(LocaleController.getString(R.string.MicControlMicrophone));
+        microphoneModeView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        microphoneModeView.setTextColor(Color.WHITE);
+        microphoneModeView.setGravity(Gravity.CENTER);
+        microphoneModeView.setMinHeight(dp(48));
+        microphoneModeView.setPadding(dp(12), dp(6), dp(12), dp(6));
+        microphoneModeView.setSingleLine(true);
+        microphoneModeView.setCompoundDrawablePadding(dp(6));
+        microphoneModeView.setBackground(Theme.createSimpleSelectorRoundRectDrawable(dp(24), 0xff26313d, 0xff3d5365));
+        microphoneModeView.setOnClickListener(v -> showMicrophoneModeSheet());
+        frameLayout.addView(microphoneModeView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT,
+                Gravity.BOTTOM | (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT), 16, 0, 16, 88));
 
         addIcon = new ImageView(context);
         addIcon.setBackground(Theme.createSelectorDrawable(ColorUtils.setAlphaComponent(Color.WHITE, (int) (255 * 0.3f))));
@@ -1488,6 +1503,8 @@ public class VoIPFragment implements
             return;
         }
         isFinished = true;
+        dismissMicrophoneModeSheet();
+        microphoneModeView.setVisibility(View.GONE);
         if (VoIPService.getSharedInstance() != null) {
             int h = instance.windowView.getMeasuredHeight();
             VoIPPiPView.show(instance.activity, instance.currentAccount, instance.windowView.getMeasuredWidth(), h, VoIPPiPView.ANIMATION_ENTER_TYPE_TRANSITION);
@@ -1550,6 +1567,7 @@ public class VoIPFragment implements
         updateViewState();
         switchingToPip = true;
         VoIPPiPView.switchingToPip = true;
+        microphoneModeView.setVisibility(View.GONE);
         VoIPPiPView.prepareForTransition();
         notificationsLocker.lock();
         AndroidUtilities.runOnUIThread(() -> {
@@ -1789,50 +1807,81 @@ public class VoIPFragment implements
         if (service != null) {
             AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
             hideUiRunnableWaiting = false;
-            if (canHideUI && uiVisible) {
+            if (canHideUI && uiVisible && microphoneModeSheet == null && !isDestroyed && !isFinished && !windowViewSkipRender) {
                 AndroidUtilities.runOnUIThread(hideUIRunnable, 3000);
                 hideUiRunnableWaiting = true;
             }
         }
     }
 
-    private void showMicrophoneModeDialog() {
-        final VoIPServiceState state = VoIPService.getSharedState();
-        if (activity.isFinishing() || state == null || state.isConference()) {
+    private boolean isMicrophoneModeAvailable() {
+        final VoIPService service = VoIPService.getSharedInstance();
+        return !isDestroyed && !isFinished && !switchingToPip && !windowViewSkipRender
+                && service != null && service.getGroupCall() == null && !service.isConference() && !service.isConverting()
+                && (currentState == VoIPService.STATE_ESTABLISHED || currentState == VoIPService.STATE_RECONNECTING);
+    }
+
+    private int getMicrophoneModeOffset() {
+        return isMicrophoneModeAvailable() ? dp(56) : 0;
+    }
+
+    private int getVisibleCallControlsHeight() {
+        return uiVisible ? dp(80) + getMicrophoneModeOffset() : 0;
+    }
+
+    private void dismissMicrophoneModeSheet() {
+        if (microphoneModeSheet != null) {
+            MicrophoneModeSheet sheet = microphoneModeSheet;
+            microphoneModeSheet = null;
+            sheet.dismiss();
+        }
+    }
+
+    private void showMicrophoneModeSheet() {
+        if (activity.isFinishing() || !uiVisible || !isMicrophoneModeAvailable() || microphoneModeSheet != null) {
             return;
         }
-        final boolean enabled = SharedConfig.voiceIsolationEnabled;
-        new DarkAlertDialog.Builder(activity)
-                .setTitle(LocaleController.getString(R.string.MicControlMicrophone))
-                .setMessage(LocaleController.getString(R.string.MicControlVoiceIsolationInfo))
-                .setItems(new CharSequence[]{
-                        (enabled ? "" : "✓ ") + LocaleController.getString(R.string.MicControlStandard),
-                        (enabled ? "✓ " : "") + LocaleController.getString(R.string.MicControlVoiceIsolation)
-                }, (dialog, which) -> {
-                    final VoIPService service = VoIPService.getSharedInstance();
-                    if (service != null) {
-                        service.setVoiceIsolationEnabled(which == 1);
-                    } else {
-                        SharedConfig.setVoiceIsolationEnabled(which == 1);
-                    }
-                    updateMicrophoneMode();
-                })
-                .show();
+        AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
+        hideUiRunnableWaiting = false;
+        MicrophoneModeSheet sheet = new MicrophoneModeSheet(activity, SharedConfig.voiceIsolationEnabled, enabled -> {
+            if (isMicrophoneModeAvailable()) {
+                VoIPService.getSharedInstance().setVoiceIsolationEnabled(enabled);
+                updateMicrophoneMode();
+            }
+        });
+        microphoneModeSheet = sheet;
+        sheet.setOnDismissListener(() -> {
+            if (microphoneModeSheet == sheet) {
+                microphoneModeSheet = null;
+                startWaitingFoHideUi();
+            }
+        });
+        sheet.show();
     }
 
     private void updateMicrophoneMode() {
         if (microphoneModeView == null) {
             return;
         }
-        final VoIPServiceState state = VoIPService.getSharedState();
-        final boolean show = state != null && !state.isConference()
-                && currentState != VoIPService.STATE_ENDED
-                && currentState != VoIPService.STATE_FAILED
-                && currentState != VoIPService.STATE_HANGING_UP;
+        final boolean available = isMicrophoneModeAvailable();
+        final boolean show = available && uiVisible;
         microphoneModeView.setVisibility(show ? View.VISIBLE : View.GONE);
-        microphoneModeView.setText(LocaleController.formatString("MicControlMicrophoneMode",
-                R.string.MicControlMicrophoneMode, LocaleController.getString(SharedConfig.voiceIsolationEnabled
-                        ? R.string.MicControlVoiceIsolation : R.string.MicControlStandard)));
+        microphoneModeView.setEnabled(show);
+        microphoneModeView.setAlpha(uiVisibilityAlpha);
+        final String mode = LocaleController.getString(SharedConfig.voiceIsolationEnabled
+                ? R.string.MicControlVoiceIsolation : R.string.MicControlStandard);
+        microphoneModeView.setContentDescription(LocaleController.formatString("MicControlMicrophoneMode",
+                R.string.MicControlMicrophoneMode, mode));
+        if (microphoneModeView.getTag() == null || (boolean) microphoneModeView.getTag() != SharedConfig.voiceIsolationEnabled) {
+            Drawable icon = ContextCompat.getDrawable(activity, R.drawable.msg_noise_on).mutate();
+            icon.setColorFilter(SharedConfig.voiceIsolationEnabled ? 0xff7dc4ff : Color.WHITE, android.graphics.PorterDuff.Mode.SRC_IN);
+            icon.setBounds(0, 0, dp(22), dp(22));
+            microphoneModeView.setCompoundDrawablesRelative(icon, null, null, null);
+            microphoneModeView.setTag(SharedConfig.voiceIsolationEnabled);
+        }
+        if (!available) {
+            dismissMicrophoneModeSheet();
+        }
     }
 
     private void updateViewState() {
@@ -2113,7 +2162,7 @@ public class VoIPFragment implements
             showUi(true);
         }
 
-        if (uiVisible && canHideUI && !hideUiRunnableWaiting && service != null) {
+        if (uiVisible && canHideUI && !hideUiRunnableWaiting && service != null && microphoneModeSheet == null) {
             AndroidUtilities.runOnUIThread(hideUIRunnable, 3000);
             hideUiRunnableWaiting = true;
         }
@@ -2139,13 +2188,13 @@ public class VoIPFragment implements
                 }
                 addIcon.animate().alpha(0f).start();
             }
-            notificationsLayout.animate().translationY(-AndroidUtilities.dp(16) - (uiVisible ? AndroidUtilities.dp(80) : 0)).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
+            notificationsLayout.animate().translationY(-dp(16) - getVisibleCallControlsHeight()).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
         } else {
             backIcon.setVisibility(showBack ? View.VISIBLE : View.GONE);
             backIcon.setAlpha(showBack ? 1f : 0);
             addIcon.setVisibility(showAdd ? View.VISIBLE : View.GONE);
             addIcon.setAlpha(showAdd ? 1f : 0);
-            notificationsLayout.setTranslationY(-AndroidUtilities.dp(16) - (uiVisible ? AndroidUtilities.dp(80) : 0));
+            notificationsLayout.setTranslationY(-dp(16) - getVisibleCallControlsHeight());
         }
 
         if (currentState != VoIPService.STATE_HANGING_UP && currentState != VoIPService.STATE_ENDED) {
@@ -2232,7 +2281,7 @@ public class VoIPFragment implements
 
             if (notificationsLayout.getChildCount() == 0 && callingUserIsVideo && service.privateCall != null && !service.privateCall.video && !service.sharedUIParams.tapToVideoTooltipWasShowed) {
                 service.sharedUIParams.tapToVideoTooltipWasShowed = true;
-                tapToVideoTooltip.setTranslationY(-(fragmentView.getMeasuredHeight() - buttonsLayout.getY() + AndroidUtilities.dp(6)));
+                tapToVideoTooltip.setTranslationY(-(fragmentView.getMeasuredHeight() - buttonsLayout.getY() + dp(6) + getMicrophoneModeOffset()));
                 tapToVideoTooltip.setJointPx(0, buttonsLayout.getX() + bottomVideoBtn.getX() + AndroidUtilities.dp(14));
                 tapToVideoTooltip.show();
             } else if (notificationsLayout.getChildCount() != 0) {
@@ -2244,7 +2293,7 @@ public class VoIPFragment implements
             }
         }
 
-        floatingViewsOffset = notificationsLayout.getChildsHight();
+        floatingViewsOffset = notificationsLayout.getChildsHight() + (uiVisible ? getMicrophoneModeOffset() : 0);
 
         callingUserMiniFloatingLayout.setBottomOffset(floatingViewsOffset, animated);
         currentUserCameraFloatingLayout.setBottomOffset(floatingViewsOffset, animated);
@@ -2385,8 +2434,9 @@ public class VoIPFragment implements
         }
 
         uiVisible = show;
+        updateMicrophoneMode();
         windowView.requestFullscreen(!show);
-        notificationsLayout.animate().translationY(-AndroidUtilities.dp(16) - (uiVisible ? AndroidUtilities.dp(80) : 0)).setDuration(150).setStartDelay(notificationsLayoutStartDelay).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
+        notificationsLayout.animate().translationY(-dp(16) - getVisibleCallControlsHeight()).setDuration(150).setStartDelay(notificationsLayoutStartDelay).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
     }
 
     private void showFloatingLayout(int state, boolean animated) {
@@ -3064,6 +3114,7 @@ public class VoIPFragment implements
     }
 
     public void onPauseInternal() {
+        dismissMicrophoneModeSheet();
         PowerManager pm = (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
 
         boolean screenOn;
@@ -3215,6 +3266,7 @@ public class VoIPFragment implements
         }
 
         windowViewSkipRender = true;
+        dismissMicrophoneModeSheet();
         updateViewState();
 
         WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);

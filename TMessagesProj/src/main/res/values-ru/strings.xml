@@ -267,5 +267,7 @@
     <string name="MicControlStandard">Стандартный</string>
     <string name="MicControlVoiceIsolation">Изоляция голоса</string>
     <string name="MicControlMicrophoneMode">Микрофон: %1$s</string>
-    <string name="MicControlVoiceIsolationInfo">Изоляция голоса уменьшает фоновый шум в звуке, который слышит собеседник. Доступна в личных голосовых и видеозвонках.</string>
+    <string name="MicControlStandardInfo">Обычная обработка микрофона Telegram.</string>
+    <string name="MicControlVoiceIsolationInfo">Уменьшает фоновый шум для собеседника.</string>
+    <string name="MicControlPrivateCallsInfo">Для личных голосовых и видеозвонков.</string>
 </resources>
