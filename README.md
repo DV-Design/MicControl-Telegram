@@ -6,7 +6,7 @@
 
 ## Скачать
 
-- [Тестовая Danygramm 1.2 для arm64](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.2/Danygramm-arm64.apk) · [Релиз 1.2](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2). В этой версии добавил настройку ключа Google Maps. Отрисовку карт на телефоне ещё нужно проверить.
+- Готовлю тестовую 1.2 с Google Maps: [сборка на GitHub](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39420257389). Ссылку на APK добавлю после проверки файла. Отрисовку карт на телефоне ещё нужно проверить.
 - [Стабильная Danygramm 1.0 для arm64](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.0/Danygramm-arm64.apk) · [Релиз и SHA-256](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0).
 - [Предыдущая тестовая 1.1](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.1/Danygramm-arm64.apk). Обработка звука в 1.2 такая же, как в 1.1: RNNoise сильнее подавляет окружающие звуки. Тихие начала слов могут ослабляться. Если это мешает, выберите обычное «Шумоподавление».
 

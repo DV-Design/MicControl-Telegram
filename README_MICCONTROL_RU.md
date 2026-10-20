@@ -4,7 +4,7 @@
 
 ## Установка
 
-[Тестовая Danygramm 1.2](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.2/Danygramm-arm64.apk) · [Релиз 1.2](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2).
+Тестовая Danygramm 1.2 [собирается на GitHub](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39420257389). Ссылку на APK добавлю после проверки файла.
 
 В 1.2 добавил передачу ключа Google Maps из настроек сборки. Имя версии `13.0.2-danygramm-1.2`, code `71819`. Обработка микрофона такая же, как в 1.1. Карты и звонки на живом телефоне ещё нужно проверить; UI-тесты для 1.1 и 1.2 не запускал.
 
