@@ -15,7 +15,8 @@
 
 ## Текущий приоритет после релиза 1.0
 
-- [ ] `miccontrol-czi` — **in_progress**: усилить подавление окружающих звуков и остаточного шума в паузах, проверить сохранение речи на PCM, собрать обновление. Пользователь допускает чужие голоса и проверит интерфейс сам; новые UI-тесты не запускаются.
+- [ ] `miccontrol-czi` — **in_progress**: RNNoise 1.6 проверен на девяти аудиосценариях, ASan/UBSan и 400 переключениях. APK 1.1 собран и подписан прежним ключом; пакет, версия, собственная API-конфигурация, arm64/16 КиБ и метаданные проверены. Предстоит публикация предварительного релиза и анонимное скачивание. UI пользователь проверит сам; тихие начала слов могут ослабляться.
+  → Artifacts: [аудиоизмерения](docs/reports/audio/2026-10/ambient-noise-spectral-evaluation.md), [ревью](docs/reports/code-reviews/2026-10/CR-2026-10-20-ambient-noise-1.1.md), [методика](tests/miccontrol/run_ambient_noise_tests.py).
 - [ ] `miccontrol-adn` — **deferred**: выделять именно голос владельца. Отложено 20 октября по уточнению пользователя: чужие голоса допустимы, приоритет — посторонние звуки. Прототип не включён в приложение.
 - [x] `miccontrol-ulk` — **completed**: диагностический C++-прототип, 3/3 точных Mac golden, ASan/UBSan/reset/flush/lifetime, реальный native Android arm64/16 КиБ, проверка 1/2/4 потоков, выноса неизменных вычислений и длинной регистрации. Исследование воспроизводится; этот результат не означает готовность owner-only режима.
   → Artifacts: [native](TMessagesProj/jni/voip/miccontrol/TargetVoiceInference.cpp), [методика](tests/miccontrol/TARGET_VOICE_TESTS.md), [измерения и отрицательные случаи](docs/reports/audio/2026-10/target-voice-model-evaluation.md).

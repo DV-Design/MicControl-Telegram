@@ -50,7 +50,7 @@ bool VoiceIsolationDenoiser::Initialize(int sample_rate_hz, std::size_t num_chan
     channels_.clear();
     source_frames_ = 0;
     needs_reset_ = false;
-    noise_reduction_ = std::max(0.0f, std::min(0.30f, noise_reduction));
+    noise_reduction_ = std::max(0.0f, std::min(0.60f, noise_reduction));
     // These are the internal processing rates supported by WebRTC's APM.
     if ((sample_rate_hz != 8000 && sample_rate_hz != 16000 &&
          sample_rate_hz != 32000 && sample_rate_hz != 48000) ||
@@ -103,7 +103,7 @@ bool VoiceIsolationDenoiser::Process(float* const* channels, std::size_t num_cha
         }
         // AudioBuffer already uses PCM16 amplitude; do not multiply by 32768.
         // Process silence as well, allowing the filter's delayed audio to drain.
-        // A 1.30 exponent means 30% stronger attenuation in decibels in the
+        // A 1.60 exponent means 60% stronger attenuation in decibels in the
         // frequency bins RNNoise identifies as noise. Speech bins near unity
         // keep their level; this is not a uniform microphone volume change.
         rnnoise_process_frame_strength(channel.state, channel.output.data(), input, 1.0f + noise_reduction_);

@@ -484,7 +484,7 @@ float rnnoise_process_frame_strength(DenoiseState *st, float *out, const float *
 #if 1
     for (i=0;i<FREQ_SIZE;i++) {
       /* Preserve speech bins near unity; strengthen only learned attenuation. */
-      if (strength > 1.f) gf[i] = powf(MAX16(0.f, MIN16(1.f, gf[i])), MIN16(strength, 1.3f));
+      if (strength > 1.f) gf[i] = powf(MAX16(0.f, MIN16(1.f, gf[i])), MIN16(strength, 1.6f));
       X[i].r *= gf[i];
       X[i].i *= gf[i];
     }

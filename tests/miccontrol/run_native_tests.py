@@ -20,7 +20,13 @@ def main():
     parser.add_argument("--sanitize", action="store_true")
     parser.add_argument("--speech-wav", type=Path,
                         help="optional clean speech fixture: 48 kHz mono PCM16 WAV")
+    parser.add_argument("--ambient-input", type=Path, action="append", default=[],
+                        help="compare real 48 kHz mono FloatS16 PCM with unchanged exp1.3 RNNoise")
+    parser.add_argument("--ambient-output", type=Path, action="append", default=[],
+                        help="output prefix for baseline/candidate/probability Float32 files")
     args = parser.parse_args()
+    if len(args.ambient_input) != len(args.ambient_output) or (args.ambient_input and args.speech_wav):
+        parser.error("Use --ambient-input and --ambient-output together, separately from --speech-wav")
     root = Path(__file__).resolve().parents[2]
     jni = root / "TMessagesProj/jni"
     voip = jni / "voip"
@@ -66,6 +72,10 @@ def main():
         executable = str(Path(build) / "voice_isolation_test")
         subprocess.run(cxx + flags + objects + ["-o", executable], check=True)
         test_args = [executable]
+        if args.ambient_input:
+            test_args.append("--ambient")
+            for source, output in zip(args.ambient_input, args.ambient_output):
+                test_args += [str(source), str(output)]
         if args.speech_wav:
             with wave.open(str(args.speech_wav), "rb") as speech:
                 if (speech.getframerate(), speech.getnchannels(), speech.getsampwidth(),

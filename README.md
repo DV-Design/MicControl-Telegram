@@ -13,6 +13,8 @@ Danygramm основан на официальном исходном коде [
 
 [**Danygramm 1.0 — APK для arm64**](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.0/Danygramm-arm64.apk) · [Релиз и SHA-256](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0).
 
+[**Danygramm 1.1 — тестовый APK с усиленным подавлением звуков**](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.1/Danygramm-arm64.apk). Предварительный релиз для проверки звука на телефоне: RNNoise сильнее подавляет шумовые частотные полосы. Тихие начала слов могут ослабляться; при необходимости выберите обычное «Шумоподавление». UI-тесты этой версии не запускались по просьбе пользователя. Автоматическое обновление остаётся на стабильной 1.0.
+
 Репозиторий публичный, для скачивания вход в GitHub не нужен. Пакет и сертификат сохранены: APK устанавливается поверх прежнего MicControl/Danygramm без удаления приложения.
 
 ## Как пользоваться
