@@ -4,9 +4,9 @@
 
 ## Установка
 
-Тестовая Danygramm 1.2 [собирается на GitHub](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39420257389). Ссылку на APK добавлю после проверки файла.
+[Тестовая Danygramm 1.2](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.2/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2).
 
-В 1.2 добавил передачу ключа Google Maps из настроек сборки. Имя версии `13.0.2-danygramm-1.2`, code `71819`. Обработка микрофона такая же, как в 1.1. Карты и звонки на живом телефоне ещё нужно проверить; UI-тесты для 1.1 и 1.2 не запускал.
+В 1.2 подключил карты; работу проверил на телефоне. Имя версии `13.0.2-danygramm-1.2`, code `71819`. Обработка микрофона такая же, как в 1.1: на громком фоне шум ещё слышен, а речь может прерываться. Этим занимаюсь отдельно на основе 1.2. UI-тесты для 1.1 и 1.2 не запускал.
 
 [Стабильная Danygramm 1.0](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.0/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0). Она остаётся в стабильном канале обновления. Версия `13.0.2-danygramm-1.0`, code `71799`.
 
@@ -102,7 +102,7 @@ Gradle APK лежит в `TMessagesProj_AppStandalone/build/outputs/apk/afat/sta
 - SHA-1 сертификата `47:B9:97:83:0C:04:98:BF:3D:4D:61:8A:39:55:FB:CA:1D:28:0E:69`;
 - в ограничениях API оставьте только Maps SDK for Android.
 
-Для своей подписи укажите её SHA-1. [Инструкция Google по настройке ключа](https://developers.google.com/maps/documentation/android-sdk/get-api-key). Для локального перевода ML Kit этот ключ не нужен. Отрисовку карт на телефоне ещё не проверял.
+Для своей подписи укажите её SHA-1. [Инструкция Google по настройке ключа](https://developers.google.com/maps/documentation/android-sdk/get-api-key). Для локального перевода ML Kit этот ключ не нужен.
 
 ## Проверки
 
@@ -113,7 +113,7 @@ python3 tests/miccontrol/run_native_tests.py --sanitize
 python3 tests/miccontrol/run_native_tests.py --sanitize --speech-wav path/to/48000hz-mono-pcm16.wav
 ```
 
-ASan/UBSan покрывают RNNoise и resampling, mono/stereo 8/16/32/48 кГц, точный bypass, тишину, независимость каналов, повторные переключения и освобождение памяти. Для Android-проверок предыдущих сборок использовал реальный APK с его нативной библиотекой. Проверку 1.1 и 1.2 на телефоне оставил для ручного теста.
+ASan/UBSan покрывают RNNoise и resampling, mono/stereo 8/16/32/48 кГц, точный bypass, тишину, независимость каналов, повторные переключения и освобождение памяти. Для Android-проверок предыдущих сборок использовал реальный APK с его нативной библиотекой. Сборка 1.2 и опубликованный APK прошли статическую проверку; результат сохранил в [отчёте релиза](docs/reports/audio/2026-10/danygramm-1.2-release.md).
 
 ## Если код входа не приходит
 

@@ -1,8 +1,8 @@
 # Google Maps configuration review for Danygramm 1.2
 
 Date: 2026-10-20. Reviewer: independent Android artifact reviewer.
-Baseline: `49f4f0af0201a5ebe9ff27d47531a11c82be47b2` plus the scoped Maps configuration changes.
-Status: source review passed; inspection of the real CI release artifact is pending.
+Reviewed source: `1adbb1d8af08e4849da9cdc40e5a941a46d97a7f`, against baseline `49f4f0af0201a5ebe9ff27d47531a11c82be47b2`.
+Status: source review and independent static inspection of the real CI APK passed. The user separately confirmed working maps on a phone on 2026-10-20.
 Scope: configuration, CI secret propagation, final artifact verification and static release identity.
 
 ## Findings
@@ -28,16 +28,24 @@ The independent helper `.tmp/current/inspect-1.2-ci.py` passed 13 focused decode
 
 The helper reads the own Telegram API configuration and both non-debug BuildConfig classes from the SHA-pinned public 1.0 APK using `dexdump`, without printing or saving their credential values. Python syntax and `git diff --check` passed. No Gradle build was started by this reviewer.
 
-## Pending real CI artifact inspection
+## Real CI artifact inspection
 
-The helper requires an explicitly supplied APK, checksum, update metadata, Maps proof, expected source commit and expected APK SHA-256. It rejects the local dummy proof because `matchesEnvironment` must be true and `sourceCommit` must equal the expected full CI commit.
+The independent helper completed successfully on the artifact from [CI run 39420257389](https://github.com/DV-Design/MicControl-Telegram/actions/runs/39420257389), source `1adbb1d8af08e4849da9cdc40e5a941a46d97a7f`. APK size: 58,298,398 bytes. SHA-256: `5b88981df7fd835539a8885d048cbaf57b3dc46f3c45e5d8aceef964e9976d42`.
 
-The actual audit will check version/package/label, both non-debug BuildConfig classes, own Telegram API equality in memory against the SHA-pinned 1.0 APK, signing certificate SHA-256 and SHA-1, v1/v2 signatures, exactly three arm64 libraries with 16 KiB ELF LOAD alignment, the 160 MiB updater cap, checksum/update metadata, absence of TSE/ORT model payloads, application-level Maps metadata and exact equality to the CI proof's key hash.
+The checks passed for package `org.miccontrol.messenger.web`, version `71819` / `13.0.2-danygramm-1.2`, label Danygramm, both non-debug BuildConfig classes, and own Telegram API equality in memory against the SHA-pinned 1.0 APK. The audit verified v1/v2 signatures, exactly three arm64 libraries with 16 KiB ELF LOAD alignment, the 160 MiB updater cap, checksum/update metadata, absence of TSE/ORT model payloads and application-level Maps metadata.
 
-The expected signing certificate remains SHA-256 `59e104c1d8b66e20c47119aed387993df655475cdd3153fb21bfb3752d85debe`, SHA-1 `47b997830c0498bf3d4d618a3955fbca1d280e69`.
+The packaged Maps key SHA-256 is `1eda660ac68bc7b77710588b114039852795f61d54f8f2eb1584afc5c2d472c1`. It exactly matches the proof generated in CI from the Actions secret. The proof also matches the actual APK hash, source commit and version, with `matchesEnvironment=true`. No key value was printed or saved by this inspection. The local dummy build was not used for the release.
+
+The signing certificate remains SHA-256 `59e104c1d8b66e20c47119aed387993df655475cdd3153fb21bfb3752d85debe`, SHA-1 `47b997830c0498bf3d4d618a3955fbca1d280e69`.
+
+Evidence: `artifacts/qa/maps-1.2/ci-independent/candidate.json`, identical copy `artifacts/qa/1.2-candidate.json`. The [1.2 prerelease](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2) was subsequently downloaded in full without authentication; size, APK SHA-256, checksum and update metadata matched. Evidence: `artifacts/qa/1.2-public-download/verified.json`. The latest stable release remains 1.0.
+
+## User phone confirmation
+
+On 2026-10-20 the user confirmed that maps work in 1.2 on their phone. This is a user-reported physical result, separate from the static artifact checks above. The reviewer did not operate the phone or run a map-rendering test. Audio processing is unchanged from 1.1; the user reported residual noise and speech interruptions on a loud background, tracked separately as `miccontrol-8sd` using 1.2 as its base.
 
 ## Limits
 
-No UI, adb, emulator, device, instrumentation, authentication or Google API request was performed. A packaged key matching the Actions secret proves configuration propagation. It does not establish enabled Maps SDK access, billing status, Android package/certificate restrictions, or successful live map rendering. Google requires those Cloud-side prerequisites separately. [Google setup documentation](https://developers.google.com/maps/documentation/android-sdk/get-api-key), [Android SDK configuration](https://developers.google.com/maps/documentation/android-sdk/config).
+The reviewer performed no UI, adb, emulator, device, instrumentation, authentication or Google API request. A packaged key matching the Actions secret proves configuration propagation. This audit did not inspect Cloud-side billing or package/certificate restriction settings. The user's phone confirmation is the evidence for live map rendering. [Google setup documentation](https://developers.google.com/maps/documentation/android-sdk/get-api-key), [Android SDK configuration](https://developers.google.com/maps/documentation/android-sdk/config).
 
 Binary manifest decoding uses the existing Android SDK `aapt2` command, rather than a custom AXML decoder. [Android AAPT2 documentation](https://developer.android.com/tools/aapt2#dump).

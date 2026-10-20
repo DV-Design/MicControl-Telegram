@@ -13,9 +13,12 @@
 - [x] `miccontrol-agy` — **completed**: подтверждён бумажный самолётик в стиле Telegram с маленькими красными звёздами на крыльях; согласовать launcher и уведомления.
   → Artifacts: [самолётик](TMessagesProj/src/main/res/drawable/danygramm_plane.xml), [иконка уведомлений](TMessagesProj/src/main/res/drawable/danygramm_notification.xml), [отчёт](docs/reports/code-reviews/2026-10/CR-2026-10-19-danygramm-1.0.md).
 
-## Текущий приоритет после релиза 1.0
+## Текущий приоритет после релиза 1.2
 
-- [ ] `miccontrol-re7` — **in_progress**: подключить Google Maps через `GOOGLE_MAPS_API_KEY`, проверить конфигурацию и выпустить APK 1.2. UI и живые карты пользователь проверит сам.
+- [ ] `miccontrol-8sd` — **in_progress**: подобрать нейросетевое шумоподавление вместо RNNoise. Пользователь сообщил, что на громком фоне шум остаётся, а речь прерывается. Основа: рабочая 1.2 с картами, source `1adbb1d8af08e4849da9cdc40e5a941a46d97a7f`; сначала проверить качество на публичных аудиозаписях и задержку, затем интегрировать в Android. Карты, пакет и подпись сохранить; UI-тесты не запускать.
+  → Artifacts: [основа 1.2 и её проверки](docs/reports/audio/2026-10/danygramm-1.2-release.md).
+- [x] `miccontrol-re7` — **completed**: Google Maps подключён через `GOOGLE_MAPS_API_KEY`. Реальный CI APK 1.2 прошёл независимую статическую проверку, опубликован как prerelease и полностью скачан без авторизации с совпавшим SHA-256. Пользователь 20 октября подтвердил рабочие карты на телефоне. Звук остался как в 1.1; стабильный канал обновления остаётся на 1.0. UI/adb/AndroidTest этой версии не запускались.
+  → Artifacts: [настройка карт](gradle/miccontrol.gradle), [CI](.github/workflows/build-apk.yml), [статический аудит](docs/reports/code-reviews/2026-10/CR-2026-10-20-google-maps.md), [APK 1.2](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2), [проверка публикации](docs/reports/audio/2026-10/danygramm-1.2-release.md).
 - [x] `miccontrol-dr6` — **completed**: оба README переписаны от первого лица простым языком. Команды, ссылки, описание функций, настройки сборки и ограничения сохранены.
   → Artifacts: [README](README.md), [сборка и настройки](README_MICCONTROL_RU.md).
 - [x] `miccontrol-czi` — **completed**: RNNoise 1.6 проверен на девяти аудиосценариях, ASan/UBSan и 400 переключениях. APK 1.1 собран и подписан прежним ключом; пакет, версия, собственная API-конфигурация, arm64/16 КиБ и метаданные проверены. Предварительный релиз опубликован и полностью скачан без авторизации; SHA-256 совпал. UI пользователь проверит сам; тихие начала слов могут ослабляться.
