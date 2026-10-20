@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-20",
+  "candidate": "REAL-TSE spk_emb_causal_100",
+  "task": "miccontrol-wse",
+  "source": {
+    "repository": "https://github.com/REAL-TSE/wesep-real-tse",
+    "commit": "2a540977a348fbaa92e623210505430e2cec608d",
+    "readme": "https://github.com/REAL-TSE/wesep-real-tse/blob/2a540977a348fbaa92e623210505430e2cec608d/README.md",
+    "wespeakerRepository": "https://github.com/wenet-e2e/wespeaker",
+    "wespeakerCommitFromReadme": "8f53b6485d9f88a207bd17e7f8dba899495ec794"
+  },
+  "archive": {
+    "url": "https://drive.google.com/uc?export=download&id=1M4UqK2A2EeHmQ0pCevYqBgaYn3RvklgC",
+    "publicDownloadUrl": "https://drive.usercontent.google.com/download?id=1M4UqK2A2EeHmQ0pCevYqBgaYn3RvklgC&export=download&confirm=t",
+    "name": "real-tse-ckpt.zip",
+    "bytes": 1048798335,
+    "entries": 12,
+    "selectedDownloadBytes": 236567065,
+    "rangeRequests": 129,
+    "maxHttpRangeBytes": 2097152,
+    "downloadFinishedUtc": "2026-10-20T06:11:37.527574+00:00"
+  },
+  "localDirectory": ".local/target-voice/real-tse-causal",
+  "files": {
+    "avg_model.pt": {
+      "archiveEntry": "spk_emb_causal_100/avg_model.pt",
+      "bytes": 251856016,
+      "compressedBytes": 236500375,
+      "zipCrc32": "d4e5ea07",
+      "sha256": "42b73219eefefcbba4b5da0dcb89dce292359c9f93b1a951c7b6d196da2155b3"
+    },
+    "config.yaml": {
+      "archiveEntry": "spk_emb_causal_100/config.yaml",
+      "bytes": 2487,
+      "compressedBytes": 976,
+      "zipCrc32": "4b70aec7",
+      "sha256": "80820eb78de6639160f7124d09cbacbc8397e321d8075721e89edb7cec50a0fa"
+    }
+  },
+  "integrity": {
+    "zipCrcAndExactSizeVerified": true,
+    "postDownloadSha256Rechecked": true,
+    "sha256Provenance": "Computed locally; no publisher SHA256 located",
+    "downloadInspectionDeserializedCheckpoint": false
+  },
+  "configuration": {
+    "model": "TSE_BSRNN_SPK",
+    "separator": {
+      "causal": true,
+      "sr": 16000,
+      "win": 512,
+      "stride": 128,
+      "feature_dim": 128,
+      "num_repeat": 6,
+      "nspk": 1
+    },
+    "enabledFeature": "spkemb",
+    "fusion": "multiply",
+    "speakerEncoder": "ECAPA_TDNN_GLOB_c512",
+    "embeddingDimensions": 192,
+    "melBins": 80,
+    "pooling": "ASTP",
+    "fbankDitherFromConfig": 1.0,
+    "trainingPretrainedPath": "./wespeaker_models/voxceleb_ECAPA512/avg_model.pt",
+    "localLoaderBehavior": "disable_pretrained sets path to None before strict full-checkpoint loading"
+  },
+  "license": {
+    "sourceModelFrontendSeparatorHeaders": "Apache-2.0",
+    "standaloneLicenseFileInPinnedRepository": false,
+    "licenseOrNoticeInArchive": false,
+    "weightsGrant": "No explicit accompanying weights license located; source headers alone do not establish weights redistribution terms"
+  },
+  "qualityEvaluation": {
+    "status": "deferred_before_inference_user_prioritizes_environmental_noise",
+    "report": "docs/reports/audio/2026-10/real-tse-causal-evaluation.md",
+    "limitations": "No Android performance, streaming export, owner-absence guarantee or application integration established",
+    "casesRun": 0
+  },
+  "safeCheckpointInventory": {
+    "weightsOnly": true,
+    "mmap": true,
+    "device": "cpu",
+    "unsafeGlobals": [],
+    "modelStateKeys": 948,
+    "float32Tensors": 890,
+    "int64Tensors": 58,
+    "serializedNumel": 31272386,
+    "allFinite": true,
+    "artifact": "artifacts/qa/target-voice/real-tse-causal/checkpoint-inventory.json",
+    "limitation": "Inventory only; strict full-model coverage and neural quality inference not completed. Checkpoint also contains optimizer/scheduler/scaler; container bytes are not runtime model size."
+  }
+}

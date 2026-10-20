@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Тест изоляции Danygramm</string>
+    <string name="heading">Скорость изоляции голоса</string>
+    <string name="explanation">Тестовая запись, не ваш микрофон.\nОбрабатываем 4 секунды общедоступной речи на этом телефоне. Звук не воспроизводится. Доступ к микрофону, сети и аккаунтам не требуется.</string>
+    <string name="quality_note">Это отдельная проверка скорости. Отделение чужой речи ещё дорабатывается; тест не включает изоляцию в звонках.</string>
+    <string name="start">Начать тест</string>
+    <string name="cancel">Отменить</string>
+    <string name="copy">Скопировать JSON</string>
+    <string name="ready">Готово к тесту</string>
+    <string name="copy_ok">JSON скопирован</string>
+    <string name="copy_failed">Не удалось скопировать JSON</string>
+    <string name="cancel_requested">Останавливаем тест…</string>
+    <string name="cancelled">Тест отменён</string>
+    <string name="paused_cancelled">Тест отменён при выходе с экрана</string>
+    <string name="previous_stopping">Предыдущий тест завершается…</string>
+    <string name="phase_assets">Проверяем тестовые файлы…</string>
+    <string name="phase_load">Загружаем модель…</string>
+    <string name="phase_enroll">Готовим тестовый профиль голоса…</string>
+    <string name="phase_flush">Завершаем обработку…</string>
+    <string name="error">Тест не завершён</string>
+</resources>
