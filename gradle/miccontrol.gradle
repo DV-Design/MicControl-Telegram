@@ -17,6 +17,18 @@ ext.miccontrolApiId = requestedApiId ==~ /[1-9][0-9]{0,8}/ ? requestedApiId.toIn
 ext.miccontrolApiHash = usingSampleApi ? '014b35b6184100b085b0d0572f9b5103' : requestedApiHash
 ext.miccontrolSampleApi = usingSampleApi
 ext.miccontrolAbis = configValue('MICCONTROL_ABIS', 'arm64-v8a').split(',').collect { it.trim() }
+ext.miccontrolMapsApiKey = configValue('GOOGLE_MAPS_API_KEY').trim()
+
+tasks.register('validateDanygrammMapsConfiguration') {
+    doLast {
+        if (rootProject.ext.miccontrolMapsApiKey.isEmpty()) {
+            throw new GradleException('Set GOOGLE_MAPS_API_KEY in the environment or ignored local.properties before building a standalone release.')
+        }
+        if (!(rootProject.ext.miccontrolMapsApiKey ==~ /AIza[A-Za-z0-9_-]{35}/)) {
+            throw new GradleException('GOOGLE_MAPS_API_KEY has an invalid format; use a Maps SDK for Android API key.')
+        }
+    }
+}
 
 tasks.register('validateMicControlConfiguration') {
     doLast {

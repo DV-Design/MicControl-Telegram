@@ -21,10 +21,11 @@ jobs:
           persist-credentials: false
           submodules: false
 
-      - name: Validate own API inputs and existing signing key
+      - name: Validate Telegram and Maps inputs and existing signing key
         env:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           MICCONTROL_DEBUG_KEYSTORE_B64: ${{ secrets.MICCONTROL_DEBUG_KEYSTORE_B64 }}
         run: python3 scripts/ci-preflight.py
 
@@ -52,13 +53,16 @@ jobs:
       - name: Fetch pinned submodules
         run: git submodule update --init --recursive --depth=1
 
-      - name: Build non-debug arm64 standalone with own API
+      - name: Build non-debug arm64 standalone with own API and Maps key
         env:
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: bash scripts/build-apk.sh
 
       - name: Verify final signing certificate
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         shell: bash
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs \
@@ -68,7 +72,7 @@ jobs:
           (cd artifacts && sha256sum -c Danygramm-arm64.apk.sha256)
           python3 scripts/verify-release-artifacts.py
 
-      - name: Upload release APK, SHA-256 and update metadata
+      - name: Upload release APK, SHA-256, update metadata and Maps proof
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: Danygramm-arm64-${{ github.run_number }}
@@ -76,6 +80,7 @@ jobs:
             artifacts/Danygramm-arm64.apk
             artifacts/Danygramm-arm64.apk.sha256
             artifacts/danygramm-update.json
+            artifacts/maps-configuration.json
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -90,7 +95,8 @@ jobs:
             printf 'Source commit: %s\n\n' "$GITHUB_SHA"
             printf 'APK SHA-256: %s\n\n' "$digest"
             printf 'Existing signing identity verified; sample API disabled.\n\n'
-            printf 'Build and signature checks passed. Authentication, messaging and calls were NOT validated.\n'
+            printf 'Maps metadata exactly matches the configured Actions secret.\n\n'
+            printf 'Build and signature checks passed. Map rendering, authentication, messaging and calls were NOT validated.\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Remove restored signing key

@@ -125,7 +125,11 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- A fork must configure its own Maps/Firebase project before enabling these services. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${GOOGLE_MAPS_API_KEY}" />
+
+        <!-- Firebase remains unconfigured; Maps uses this fork's own API key. -->
 
         <service
             android:name="org.telegram.messenger.GcmPushListenerService" android:exported="true">

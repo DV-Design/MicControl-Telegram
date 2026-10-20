@@ -7,5 +7,9 @@ sdk.dir=/Users/your-user/Library/Android/sdk
 TELEGRAM_API_ID=
 TELEGRAM_API_HASH=
 
+# Required for a standalone release; leave empty only for local debug builds.
+# Use a Maps SDK for Android key restricted to this app's package and signing certificate.
+GOOGLE_MAPS_API_KEY=
+
 # Only a development test may explicitly use the public upstream sample API:
 # MICCONTROL_ALLOW_SAMPLE_API=true

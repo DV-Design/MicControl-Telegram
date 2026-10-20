@@ -131,6 +131,11 @@ android {
     defaultConfig.versionCode = Integer.parseInt(APP_VERSION_CODE)
 
     applicationVariants.all { variant ->
+        if (!variant.buildType.debuggable) {
+            variant.preBuildProvider.configure {
+                dependsOn rootProject.tasks.named('validateDanygrammMapsConfiguration')
+            }
+        }
         variant.outputs.all { output ->
             outputFileName = "app.apk"
             output.versionCodeOverride = defaultConfig.versionCode * 10 + variant.productFlavors.get(0).abiVersionCode
@@ -149,6 +154,7 @@ android {
         targetSdkVersion 36
         versionName APP_VERSION_NAME
         ndkVersion "27.2.12479018"
+        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: rootProject.ext.miccontrolMapsApiKey]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

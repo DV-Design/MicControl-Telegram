@@ -15,6 +15,9 @@
 
 ## Текущий приоритет после релиза 1.0
 
+- [ ] `miccontrol-re7` — **in_progress**: подключить Google Maps через `GOOGLE_MAPS_API_KEY`, проверить конфигурацию и выпустить APK 1.2. UI и живые карты пользователь проверит сам.
+- [x] `miccontrol-dr6` — **completed**: оба README переписаны от первого лица простым языком. Команды, ссылки, описание функций, настройки сборки и ограничения сохранены.
+  → Artifacts: [README](README.md), [сборка и настройки](README_MICCONTROL_RU.md).
 - [x] `miccontrol-czi` — **completed**: RNNoise 1.6 проверен на девяти аудиосценариях, ASan/UBSan и 400 переключениях. APK 1.1 собран и подписан прежним ключом; пакет, версия, собственная API-конфигурация, arm64/16 КиБ и метаданные проверены. Предварительный релиз опубликован и полностью скачан без авторизации; SHA-256 совпал. UI пользователь проверит сам; тихие начала слов могут ослабляться.
   → Artifacts: [аудиоизмерения](docs/reports/audio/2026-10/ambient-noise-spectral-evaluation.md), [ревью](docs/reports/code-reviews/2026-10/CR-2026-10-20-ambient-noise-1.1.md), [методика](tests/miccontrol/run_ambient_noise_tests.py).
   → Artifacts: [APK 1.1](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.1), [проверка публикации](docs/reports/audio/2026-10/danygramm-1.1-release.md).

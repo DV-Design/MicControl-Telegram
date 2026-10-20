@@ -24,6 +24,7 @@ def fail(message):
 def main():
     api_id = os.environ.get("TELEGRAM_API_ID", "").strip()
     api_hash = os.environ.get("TELEGRAM_API_HASH", "").strip()
+    maps_key = os.environ.get("GOOGLE_MAPS_API_KEY", "").strip()
     encoded_key = os.environ.get("MICCONTROL_DEBUG_KEYSTORE_B64", "").strip()
     if not api_id or not api_hash:
         fail("Add repository Actions secrets TELEGRAM_API_ID and TELEGRAM_API_HASH from my.telegram.org/apps.")
@@ -33,6 +34,10 @@ def main():
         fail("Public upstream sample API credentials are forbidden in CI. Configure your own Telegram API app.")
     if os.environ.get("MICCONTROL_ALLOW_SAMPLE_API", "false").lower() != "false":
         fail("MICCONTROL_ALLOW_SAMPLE_API must remain false in CI.")
+    if not maps_key:
+        fail("Add repository Actions secret GOOGLE_MAPS_API_KEY for Maps SDK for Android.")
+    if not re.fullmatch(r"AIza[A-Za-z0-9_-]{35}", maps_key):
+        fail("GOOGLE_MAPS_API_KEY has an invalid format; use a Maps SDK for Android API key.")
     if not encoded_key:
         fail("Repository Actions secret MICCONTROL_DEBUG_KEYSTORE_B64 is missing; preserve the existing signing key.")
     try:
@@ -61,7 +66,7 @@ def main():
         destination.parent.mkdir(mode=0o700, exist_ok=True)
         destination.write_bytes(key_bytes)
         destination.chmod(0o600)
-    print("API input format and existing private signing key validated; no login request was made.")
+    print("Telegram and Maps input formats and existing private signing key validated; no API request was made.")
 
 
 if __name__ == "__main__":
