@@ -1,0 +1,41 @@
+Target voice diagnostic backend
+
+TargetVoiceInference.cpp ports the streaming state/overlap-add algorithm from
+VoxLock core.py. It is a modified C++ implementation with fixed 40 ms chunks,
+preallocated external tensor storage, independent reusable enrollment, bounded
+error strings and a final flush trimmed to the valid input length.
+
+VoxLock
+Copyright 2026 Arbaz Siddiqui
+Apache License 2.0; complete license text: LICENSE.voxlock
+Source: https://github.com/arbazsiddiqui/voxlock
+Audited source revision: 08ed37cbb79f449ca6b499bc23fb14138b207bfd
+
+Upstream attribution retained from VoxLock NOTICE:
+wesep/ is the WeSep model code from the REAL-TSE challenge baseline
+(https://github.com/REAL-TSE/wesep-real-tse), Apache-2.0 per its source headers.
+The C++ backend does not copy that Python model implementation.
+
+Compatible pretrained VoxLock artifacts (not included in this source change):
+https://huggingface.co/arbazsiddiqui/voxlock
+Pinned model revision: a50f4e1d109301d4b6f61dec57ebb1a61e7d8f03
+enroll.onnx + chunk_int8.onnx or chunk_int8_full.onnx (or chunk.onnx).
+The model repository declares Apache-2.0 and contains the corresponding LICENSE.
+Its pretrained ECAPA512 component is attributed to WeSpeaker/VoxCeleb. There is
+a licensing discrepancy: the Hugging Face ECAPA512 card declares Apache-2.0,
+while official WeSpeaker pretrained-model documentation states CC BY 4.0 for
+VoxCeleb-trained weights. Component/model redistribution needs a separate audit;
+this source change does not redistribute any model weights.
+https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md#model-license
+https://huggingface.co/Wespeaker/wespeaker-voxceleb-ecapa-tdnn512
+
+ONNX Runtime C API is used as an external native dependency (not vendored here).
+ONNX Runtime is Copyright (c) Microsoft Corporation, MIT License.
+Runtime binary distributions require their LICENSE and ThirdPartyNotices.txt.
+No VoxLock demonstration recordings, benchmark audio or ONNX Runtime binary are
+included in this source change. Audio fixtures retain their own dataset licenses.
+
+Enrollment magnitude/context are private derived acoustic data, potentially
+retaining reconstructable speech. They must be handled like a voice recording.
+This diagnostic backend has no target-absence gate and cannot promise that an
+absent owner's profile suppresses every other speaker. No app integration yet.

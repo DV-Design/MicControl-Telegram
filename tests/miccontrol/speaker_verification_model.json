@@ -1,0 +1,62 @@
+{
+  "sdk": "sherpa-onnx==1.13.8",
+  "models": {
+    "campplus": {
+      "date": "2026-10-20",
+      "sdk": "sherpa-onnx==1.13.8",
+      "modelRelease": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models",
+      "modelAssetId": 198893105,
+      "modelAssetCreatedAt": "2024-10-14T03:41:20Z",
+      "modelAssetUpdatedAt": "2024-10-14T03:41:21Z",
+      "modelUrl": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx",
+      "bytes": 29596978,
+      "sha256": "357a834f702b80161e5b981182c038e18553c1f2ca752ed6cec2052365d4129b",
+      "officialChecksumFileSha256": "c3a928cc16d165ce869553f71fcbe6fc1c1b513aee0665414548780a979b2325",
+      "modelCard": "https://modelscope.cn/api/v1/models/iic/speech_campplus_sv_en_voxceleb_16k/repo?Revision=v1.0.2&FilePath=README.md",
+      "modelCardSha256": "ff772de6927186eb597b724a9e77b5e89953105aa8c9e8daa964647a70ba93db",
+      "modelLicense": "Apache License 2.0",
+      "sdkLicense": "Apache-2.0",
+      "androidEvidence": "https://k2-fsa.github.io/sherpa/onnx/speaker-identification/apk.html",
+      "limitations": "This host experiment does not establish Android latency, owner-only security, or an open-set verification threshold."
+    },
+    "wespeaker_resnet34": {
+      "date": "2026-10-20",
+      "sdk": "sherpa-onnx==1.13.8",
+      "modelRelease": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models",
+      "modelAssetId": 198883656,
+      "modelAssetCreatedAt": "2024-10-14T02:32:54Z",
+      "modelAssetUpdatedAt": "2024-10-14T02:32:55Z",
+      "modelUrl": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/wespeaker_en_voxceleb_resnet34.onnx",
+      "bytes": 26534365,
+      "sha256": "5ef208a9da1453335308a6b6f4e6dfbd7e183a38b604de0a57664f45d257fe94",
+      "officialChecksumFileSha256": "c3a928cc16d165ce869553f71fcbe6fc1c1b513aee0665414548780a979b2325",
+      "modelCard": "https://huggingface.co/Wespeaker/wespeaker-voxceleb-resnet34/raw/main/README.md",
+      "modelCardSha256": "4bcf87ecfbbb8e07a01b21415a970c8b53a5283bf6872b657040d3f45c9241f7",
+      "modelLicense": "Unresolved upstream conflict: CC-BY-4.0 in pretrained.md; Apache-2.0 in model-specific HF card",
+      "modelLicenseEvidence": "https://raw.githubusercontent.com/wenet-e2e/wespeaker/master/docs/pretrained.md",
+      "sdkLicense": "Apache-2.0",
+      "androidEvidence": "https://k2-fsa.github.io/sherpa/onnx/speaker-identification/apk.html",
+      "limitations": "This host experiment does not establish Android latency, owner-only security, or an open-set verification threshold.",
+      "modelCardLicense": "Apache-2.0",
+      "pretrainedModelDocumentationLicense": "CC-BY-4.0",
+      "redistributionStatus": "Clarify upstream license before application distribution; research model not committed",
+      "referencePreprocessing": {
+        "implementation": "kaldi-native-fbank==1.22.3 + onnxruntime==1.31.0",
+        "source": "https://github.com/wenet-e2e/wespeaker/blob/master/wespeaker/bin/infer_onnx.py",
+        "sourceSha256": "3d3be2b52ce3ae563bc0cf96d1dc9ab7c7be4f64f1792946e82c50cd16efd05a",
+        "samplesScale": 32768,
+        "sampleRate": 16000,
+        "frameLengthMs": 25,
+        "frameShiftMs": 10,
+        "dither": 0,
+        "window": "hamming",
+        "snipEdges": true,
+        "melBins": 80,
+        "lowFreq": 20,
+        "highFreq": 0,
+        "useEnergy": false,
+        "featureNormalization": "utterance mean subtraction without variance normalization"
+      }
+    }
+  }
+}
