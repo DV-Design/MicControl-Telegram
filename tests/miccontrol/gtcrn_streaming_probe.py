@@ -271,6 +271,11 @@ def score_phase(args):
     out = args.output_dir
     manifest = json.loads((out / "inputs.json").read_text())
     cases = manifest["cases"]
+    if args.case:
+        names = set(args.case)
+        if "clean_A" not in names or names - {c["name"] for c in cases}:
+            raise ValueError("Case subset must contain clean_A calibration and only existing cases")
+        cases = [case for case in cases if case["name"] in names]
     additional_provenance = {}
     for name, directory in args.additional_candidates:
         proof_path = directory / "manifest.json"
@@ -278,8 +283,8 @@ def score_phase(args):
         if proof.get("complete") is not True or proof.get("inputManifestSha256") != sha(out / "inputs.json"):
             raise ValueError(f"Additional model manifest does not match these inputs: {name}")
         proof_cases = {c["name"]: c for c in proof["cases"]}
-        if len(proof_cases) != len(cases):
-            raise ValueError(f"Additional model manifest case count differs: {name}")
+        if {case["name"] for case in cases} - set(proof_cases):
+            raise ValueError(f"Additional model manifest lacks selected cases: {name}")
         for case in cases:
             row = proof_cases[case["name"]]
             if row["input16Sha256"] != case["inputSha256"] or row["outputSha256"] != sha(directory / f"{case['name']}-{name}.f32"):
@@ -431,6 +436,7 @@ def score_phase(args):
         **additional_provenance[name],
         "contract": "already fixed-delay-aligned mono16k normalized float32; no output normalization; inference/provenance in candidate's separate report"}
         for name, directory in args.additional_candidates]
+    report["caseSelection"] = args.case or "all43"
     save(out / args.result_name, report)
     print("Saved", out / args.result_name, flush=True)
 
@@ -448,6 +454,7 @@ def main():
     parser.add_argument("--additional-model", action="append", default=[], metavar="NAME=DIRECTORY",
                         help="score existing <case>-<NAME>.f32 aligned mono16k PCM; does not run the additional model")
     parser.add_argument("--result-name", default="result.json", help="JSON basename, for preserving earlier comparisons")
+    parser.add_argument("--case", action="append", default=[], help="score a saved-case subset, including clean_A calibration; no inference")
     args = parser.parse_args()
     for name in ("output_dir", "source", "model", "speech_dir", "noise_dir"):
         setattr(args, name, getattr(args, name).resolve())
