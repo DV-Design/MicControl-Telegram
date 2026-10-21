@@ -9,6 +9,9 @@ namespace miccontrol {
 
 // Accepts WebRTC's planar FloatS16 capture samples, in 10 ms blocks. RNNoise
 // operates at 48 kHz; the existing WebRTC sinc resampler handles other rates.
+// Enabled isolation then uses a 10 kHz intermediate rate (5 kHz Nyquist band),
+// except 8 kHz input, which is already limited to a 4 kHz Nyquist band.
+// Disabled processing remains an exact bypass; reset clears all filter history.
 class VoiceIsolationDenoiser {
 public:
     VoiceIsolationDenoiser();

@@ -165,6 +165,104 @@ void CheckStrongerIsolation() {
     std::cout << "Product default / exp1.3 residual noise energy ratio: " << default_energy / after << '\n';
 }
 
+void CheckIsolationBandwidth() {
+    // Each real wrapper run has an independent, identical exp1.6 RNNoise C API
+    // reference. Separate stimuli avoid RNNoise's own suppression of one tone
+    // making an added linear filter's response unmeasurable.
+    struct Probe {
+        double reference_cos[3] = {}, reference_sin[3] = {};
+        double actual_cos[3] = {}, actual_sin[3] = {};
+        std::vector<float> reference_pcm, actual_pcm;
+    };
+    constexpr double pi = 3.14159265358979323846;
+    const int frequencies[] = {1000, 5000, 8000};
+    const auto run = [&](int second_tone, bool add_noise) {
+        Probe result;
+        result.reference_pcm.reserve(200 * 480); result.actual_pcm.reserve(200 * 480);
+        miccontrol::VoiceIsolationDenoiser actual;
+        Require(actual.Initialize(48000, 1), "bandwidth wrapper init failed");
+        std::unique_ptr<DenoiseState, decltype(&rnnoise_destroy)> reference(rnnoise_create(nullptr), rnnoise_destroy);
+        Require(reference != nullptr, "bandwidth reference init failed");
+        std::mt19937 random(20261021);
+        std::uniform_real_distribution<float> noise(-1500.0f, 1500.0f);
+        const auto allocations_before = rnnoise_allocation_calls;
+        for (int block = 0; block < 300; ++block) {
+            float source[480], expected[480], output[480];
+            for (int i = 0; i < 480; ++i) {
+                const double t = static_cast<double>(block * 480 + i) / 48000;
+                source[i] = static_cast<float>(5000 * std::sin(2*pi*1000*t)
+                            + (second_tone ? 5000 * std::cos(2*pi*second_tone*t) : 0));
+                if (add_noise) source[i] += noise(random);
+                output[i] = source[i];
+            }
+            rnnoise_process_frame_strength(reference.get(), expected, source, 1.60f);
+            float* channels[] = {output};
+            Require(actual.Process(channels, 1, 480, true), "bandwidth wrapper process failed");
+            Require(rnnoise_allocation_calls == allocations_before, "bandwidth steady capture allocated RNNoise buffers");
+            if (block < 100) continue;
+            for (int i = 0; i < 480; ++i) {
+                Require(std::isfinite(output[i]), "bandwidth output is non-finite");
+                const double t = static_cast<double>(block * 480 + i) / 48000;
+                for (int band = 0; band < 3; ++band) {
+                    const double cosine = std::cos(2*pi*frequencies[band]*t);
+                    const double sine = std::sin(2*pi*frequencies[band]*t);
+                    result.reference_cos[band] += expected[i]*cosine;
+                    result.reference_sin[band] += expected[i]*sine;
+                    result.actual_cos[band] += output[i]*cosine;
+                    result.actual_sin[band] += output[i]*sine;
+                }
+                if (add_noise) {
+                    result.reference_pcm.push_back(expected[i]); result.actual_pcm.push_back(output[i]);
+                }
+            }
+        }
+        return result;
+    };
+    const auto amplitude = [](const Probe& probe, int band, bool reference) {
+        return std::hypot(reference ? probe.reference_cos[band] : probe.actual_cos[band],
+                          reference ? probe.reference_sin[band] : probe.actual_sin[band]) / 48000;
+    };
+    const auto pass_stop = run(8000, false);
+    const auto transition = run(5000, false);
+    const double pass_before = amplitude(pass_stop, 0, true);
+    const double stop_before = amplitude(pass_stop, 2, true);
+    const double edge_before = amplitude(transition, 1, true);
+    std::cout << "Bandwidth reference amplitudes (1/5/8 kHz), separate stimuli: "
+              << pass_before << " / " << edge_before << " / " << stop_before << std::endl;
+    Require(pass_before > 0.1 && edge_before > 0.1 && stop_before > 0.1,
+            "spectral reference lacks measurable tones");
+    const double pass_ratio = amplitude(pass_stop, 0, false) / pass_before;
+    const double stop_ratio = amplitude(pass_stop, 2, false) / stop_before;
+    const double edge_ratio = amplitude(transition, 1, false) / edge_before;
+    Require(pass_ratio >= 0.95 && pass_ratio <= 1.05, "5 kHz band limit changed the 1 kHz passband");
+    Require(edge_ratio < 0.1, "5 kHz band limit did not attenuate its 5 kHz edge by 20 dB");
+    Require(stop_ratio < 0.01, "5 kHz band limit did not reject the 8 kHz stopband by 40 dB");
+    std::cout << "5 kHz band limit vs RNNoise1.6: 1 kHz amplitude ratio " << pass_ratio
+              << ", 5 kHz transition attenuation " << -20*std::log10(std::max(edge_ratio, 1e-30)) << " dB"
+              << ", 8 kHz attenuation " << -20*std::log10(std::max(stop_ratio, 1e-30)) << " dB\n";
+    const auto delay = run(0, true);
+    int best_lag = 0;
+    double best_correlation = -1;
+    for (int lag = 0; lag <= 240; ++lag) {
+        double cross = 0, reference_energy = 0, actual_energy = 0;
+        for (std::size_t i = 240; i < delay.actual_pcm.size(); ++i) {
+            const double a = delay.reference_pcm[i-lag], b = delay.actual_pcm[i];
+            cross += a*b; reference_energy += a*a; actual_energy += b*b;
+        }
+        const double correlation = cross/std::sqrt(reference_energy*actual_energy);
+        if (correlation > best_correlation) { best_correlation = correlation; best_lag = lag; }
+    }
+    std::cout << "5 kHz band limit added fixed delay: " << best_lag << " / 48000 samples ("
+              << best_lag/48.0 << " ms), correlation " << best_correlation << std::endl;
+    // PushSincResampler discards floor((source_frames - 16) / ratio)
+    // priming outputs. Thus 480->100 adds (100-floor(464/4.8))*4.8
+    // = 19.2 samples at 48 kHz, and 100->480 adds 480-floor(84/(100/480))
+    // = 77 samples. The pair's actual fixed delay is 96.2 samples, including
+    // priming quantization, rather than just the two ideal half kernels.
+    Require(best_lag >= 95 && best_lag <= 97 && best_correlation > 0.5,
+            "band limit delay differs from its two existing sinc kernels");
+}
+
 void CheckSpeechPreservation(const char* path) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     Require(file.is_open(), "cannot open speech fixture");
@@ -257,6 +355,8 @@ int main(int argc, char** argv) {
         Require(rnnoise_allocations.empty(), "RNNoise GRU buffers leaked during initialization/reset");
         CheckStrongerIsolation();
         Require(rnnoise_allocations.empty(), "stronger-isolation states leaked");
+        CheckIsolationBandwidth();
+        Require(rnnoise_allocations.empty(), "bandwidth-isolation states leaked");
         if (argc > 1) {
             CheckSpeechPreservation(argv[1]);
             Require(rnnoise_allocations.empty(), "speech-isolation states leaked");
