@@ -44,6 +44,8 @@ public class BuildVars {
     // works only on official app ids, disable on your forks
     public static boolean SUPPORTS_PASSKEYS = false;
     public static final boolean SUPPORTS_GOOGLE_SIGN_IN = false;
+    // Firebase phone-number verification is bound to official app ids
+    public static boolean SUPPORTS_FPNV = false;
 
     static {
         if (ApplicationLoader.applicationContext != null) {
