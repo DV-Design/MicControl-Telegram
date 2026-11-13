@@ -2022,3 +2022,56 @@ JNIEXPORT void Java_org_telegram_utils_recorder_audio_AudioNoiseSuppressor_nDest
             (AudioNoiseSuppressorContext *) (intptr_t) handle
     );
 }
+
+// Danygramm: decode an Ogg/Opus voice message to 16 kHz mono float PCM for on-device speech recognition.
+// opusfile always decodes at 48 kHz; a 3-tap box filter followed by decimation is sufficient for ASR input.
+JNIEXPORT jfloatArray Java_org_telegram_messenger_DanygrammTranscriber_decodeOpus16k(JNIEnv *env, jclass class, jstring path, jint maxSeconds) {
+    const char *pathStr = (*env)->GetStringUTFChars(env, path, 0);
+    if (pathStr == NULL) {
+        return NULL;
+    }
+    int error = OPUS_OK;
+    OggOpusFile *opusFile = op_open_file(pathStr, &error);
+    (*env)->ReleaseStringUTFChars(env, path, pathStr);
+    if (opusFile == NULL || error != OPUS_OK) {
+        if (opusFile != NULL) op_free(opusFile);
+        return NULL;
+    }
+    const size_t limit = (size_t) MAX(1, maxSeconds) * 16000;
+    size_t capacity = 16000 * 30, count = 0;
+    float *out = malloc(capacity * sizeof(float));
+    float *buffer = malloc(5760 * 2 * sizeof(float));
+    int phase = 0;
+    float acc = 0.f;
+    int failed = out == NULL || buffer == NULL;
+    while (!failed && count < limit) {
+        int read = op_read_float_stereo(opusFile, buffer, 5760 * 2);
+        if (read < 0) { failed = 1; break; }
+        if (read == 0) break;
+        for (int i = 0; i < read && count < limit; i++) {
+            acc += (buffer[2 * i] + buffer[2 * i + 1]) * 0.5f;
+            if (++phase == 3) {
+                if (count == capacity) {
+                    capacity *= 2;
+                    float *grown = realloc(out, capacity * sizeof(float));
+                    if (grown == NULL) { failed = 1; break; }
+                    out = grown;
+                }
+                out[count++] = acc / 3.f;
+                acc = 0.f;
+                phase = 0;
+            }
+        }
+    }
+    op_free(opusFile);
+    free(buffer);
+    jfloatArray result = NULL;
+    if (!failed && count > 0) {
+        result = (*env)->NewFloatArray(env, (jsize) count);
+        if (result != NULL) {
+            (*env)->SetFloatArrayRegion(env, result, 0, (jsize) count, out);
+        }
+    }
+    free(out);
+    return result;
+}

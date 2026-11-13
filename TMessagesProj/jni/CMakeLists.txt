@@ -237,6 +237,8 @@ add_library(${NATIVE_LIB} SHARED
 # (WidgetEngineService), the client never does. What the client needs of the same code (the gesture policy, the CPU
 # filter pass; no widget code reaches either) is compiled into the client library (twidget_client_sources).
 include(twidget/twidget.cmake)
+# Danygramm on-device voice transcription (whisper.cpp), separate lazily loaded library
+include(danygramm/whisper.cmake)
 add_library(twidget SHARED twidget/twidget-onload.cpp twidget/twidget-seccomp.cpp)
 twidget_target_sources(twidget)
 twidget_client_sources(${NATIVE_LIB})

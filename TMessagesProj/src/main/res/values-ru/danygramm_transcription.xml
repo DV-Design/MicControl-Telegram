@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammTranscribeTitle">Расшифровка голосовых</string>
+    <string name="DanygrammTranscribeInfo">Голосовые и видеосообщения расшифровываются на телефоне с помощью Whisper: звук никуда не отправляется, Telegram Premium не нужен. Модель скачивается один раз при первой расшифровке, дальше всё работает без интернета. Язык определяется автоматически.</string>
+    <string name="DanygrammTranscribeFast">На телефоне, быстрая (%1$d МБ)</string>
+    <string name="DanygrammTranscribeAccurate">На телефоне, точная (%1$d МБ)</string>
+    <string name="DanygrammTranscribeTelegram">Серверы Telegram (Premium)</string>
+    <string name="DanygrammTranscribeFastShort">на телефоне, быстрая</string>
+    <string name="DanygrammTranscribeAccurateShort">на телефоне, точная</string>
+    <string name="DanygrammTranscribeTelegramShort">Telegram</string>
+    <string name="DanygrammTranscribeDelete">Удалить скачанные модели (%1$d МБ)</string>
+    <string name="DanygrammTranscribeCpuUnsupported">Процессор этого телефона не поддерживает расшифровку на устройстве (нужен ARMv8.2 с fp16 и dot product). Используется расшифровка Telegram.</string>
+    <string name="DanygrammTranscribeDownloading">Скачиваю модель распознавания: %1$d%% из %2$d МБ…</string>
+    <string name="DanygrammTranscribeWorking">Распознаю речь на телефоне…</string>
+    <string name="DanygrammTranscribeFailed">Не удалось расшифровать сообщение.</string>
+    <string name="DanygrammTranscribeDownloadFailed">Не удалось скачать модель распознавания. Проверьте интернет и свободное место и попробуйте ещё раз.</string>
+    <string name="DanygrammTranscribeNoFile">Сообщение ещё не скачано. Попробуйте ещё раз, когда оно загрузится.</string>
+</resources>

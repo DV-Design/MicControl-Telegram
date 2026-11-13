@@ -13,6 +13,14 @@
 - [x] `miccontrol-agy` — **completed**: подтверждён бумажный самолётик в стиле Telegram с маленькими красными звёздами на крыльях; согласовать launcher и уведомления.
   → Artifacts: [самолётик](TMessagesProj/src/main/res/drawable/danygramm_plane.xml), [иконка уведомлений](TMessagesProj/src/main/res/drawable/danygramm_notification.xml), [отчёт](docs/reports/code-reviews/2026-10/CR-2026-10-19-danygramm-1.0.md).
 
+## Danygramm 1.3: Telegram 13.2.2 и расшифровка голосовых
+
+- [x] `miccontrol-u132` — **completed**: исходники обновлены с Telegram 13.0.2 (7175) до 13.2.2 (7303) одним импортом поверх 1.2.1. Четыре конфликта разрешены (версия, флаги форка, режимы микрофона, строки), коллизия id пункта настроек исправлена. Java/Kotlin `compileAfatDebugJavaWithJavac` проходит; полная нативная сборка — в CI.
+  → Artifacts: [README](README_MICCONTROL_RU.md), [настройки](TMessagesProj/src/main/java/org/telegram/ui/SettingsActivity.java), [BuildVars](TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java).
+- [x] `miccontrol-stt` — **completed**: расшифровка голосовых и видеосообщений на телефоне через whisper.cpp v1.9.5 (base/small q5_1, скачивание с проверкой SHA-256), без Premium. Нативная библиотека собрана NDK 27.2 под arm64 с 16 КиБ страницами; на эмуляторе русская и английская речь распознаны дословно, декодер Ogg/Opus проверен.
+  → Artifacts: [транскрайбер](TMessagesProj/src/main/java/org/telegram/messenger/DanygrammTranscriber.java), [JNI](TMessagesProj/jni/danygramm/whisper_jni.cpp), [CMake](TMessagesProj/jni/danygramm/whisper.cmake), [кнопка](TMessagesProj/src/main/java/org/telegram/ui/Components/TranscribeButton.java).
+- [ ] `miccontrol-13v` — **pending**: собрать подписанный APK 1.3 в CI, установить поверх 1.2.1 на телефон, проверить вход, звонки с режимами микрофона, карты и расшифровку в реальном чате; затем опубликовать релиз.
+
 ## Текущий приоритет после релиза 1.2
 
 - [x] `miccontrol-8sd.1` — **completed**: расширенное сравнение открытых моделей и доступности коммерческих SDK. DPDFNet2/8, современный RNNoise и UL-UNAS не прошли ограниченные проверки сохранения речи/шума; безусловный победитель не установлен. Проверены 147 сохранённых выходов и STOI/ESTOI 27 пар. Доступа к лицензированным SDK пока нет.

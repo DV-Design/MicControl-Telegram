@@ -30,6 +30,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
+import org.telegram.messenger.DanygrammTranscriber;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MessageObject;
@@ -112,7 +113,7 @@ public class TranscribeButton {
 
         this.isOpen = false;
         this.shouldBeOpen = false;
-        premium = parent.getMessageObject() != null && UserConfig.getInstance(parent.getMessageObject().currentAccount).isPremium();
+        premium = parent.getMessageObject() != null && (UserConfig.getInstance(parent.getMessageObject().currentAccount).isPremium() || DanygrammTranscriber.isEnabled());
 
         loadingFloat = new AnimatedFloat(parent, 250, CubicBezierInterpolator.EASE_OUT_QUINT);
         animatedDrawLock = new AnimatedFloat(parent, 250, CubicBezierInterpolator.EASE_OUT_QUINT);
@@ -683,6 +684,8 @@ public class TranscribeButton {
                 AndroidUtilities.runOnUIThread(() -> {
                     NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.voiceTranscriptionUpdate, messageObject, null, null, (Boolean) true, (Boolean) true);
                 });
+            } else if (DanygrammTranscriber.isEnabled()) {
+                transcribeLocally(messageObject, account);
             } else {
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d("sending Transcription request, msg_id=" + messageId + " dialog_id=" + dialogId);
@@ -774,6 +777,59 @@ public class TranscribeButton {
         }
     }
 
+    private static long danygrammLocalTranscriptionSeq;
+
+    // Danygramm: on-device whisper.cpp transcription instead of messages.transcribeAudio (no Premium, audio stays local).
+    // Local ids are negative so they never collide with server transcription ids.
+    private static void transcribeLocally(MessageObject messageObject, int account) {
+        final int hash = reqInfoHash(messageObject);
+        if (isTranscribing(messageObject)) {
+            return;
+        }
+        final long localId = -(++danygrammLocalTranscriptionSeq);
+        if (transcribeOperationsByDialogPosition == null) {
+            transcribeOperationsByDialogPosition = new HashMap<>();
+        }
+        transcribeOperationsByDialogPosition.put((Integer) hash, messageObject);
+        if (transcribeOperationsById == null) {
+            transcribeOperationsById = new HashMap<>();
+        }
+        transcribeOperationsById.put(localId, messageObject);
+        messageObject.messageOwner.voiceTranscriptionId = localId;
+        DanygrammTranscriber.transcribe(messageObject, new DanygrammTranscriber.Callback() {
+            @Override
+            public void onProgress(String status) {
+                if (transcribeOperationsById == null || !transcribeOperationsById.containsKey(localId)) {
+                    return;
+                }
+                TranscribeButton.openVideoTranscription(messageObject);
+                messageObject.messageOwner.voiceTranscriptionOpen = true;
+                messageObject.messageOwner.voiceTranscriptionFinal = false;
+                NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.voiceTranscriptionUpdate, messageObject, (Long) localId, status, (Boolean) true, (Boolean) false);
+            }
+
+            @Override
+            public void onResult(String text) {
+                if (text != null) {
+                    TranscribeButton.openVideoTranscription(messageObject);
+                    messageObject.messageOwner.voiceTranscriptionOpen = true;
+                    finishTranscription(messageObject, localId, text);
+                    return;
+                }
+                if (transcribeOperationsById != null) {
+                    transcribeOperationsById.remove(localId);
+                }
+                if (transcribeOperationsByDialogPosition != null) {
+                    transcribeOperationsByDialogPosition.remove((Integer) hash);
+                }
+                messageObject.messageOwner.voiceTranscription = null;
+                messageObject.messageOwner.voiceTranscriptionOpen = false;
+                messageObject.messageOwner.voiceTranscriptionFinal = false;
+                NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.voiceTranscriptionUpdate, messageObject, null, null, (Boolean) false, (Boolean) false);
+            }
+        });
+    }
+
     public static boolean finishTranscription(MessageObject messageObject, long transcription_id, String text) {
         try {
             MessageObject messageObjectByTranscriptionId = null;
@@ -861,6 +917,9 @@ public class TranscribeButton {
             return false;
         }
         if (!TextUtils.isEmpty(messageObject.messageOwner.voiceTranscription)) {
+            return false;
+        }
+        if (DanygrammTranscriber.isEnabled()) {
             return false;
         }
         ConnectionsManager cc = ConnectionsManager.getInstance(messageObject.currentAccount);

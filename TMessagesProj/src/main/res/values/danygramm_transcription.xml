@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="DanygrammTranscribeTitle">Voice to text</string>
+    <string name="DanygrammTranscribeInfo">Voice and video messages are transcribed on this device with Whisper: audio never leaves the phone and Telegram Premium is not needed. The model is downloaded once on first use, then transcription works offline. Language is detected automatically.</string>
+    <string name="DanygrammTranscribeFast">On device, fast (%1$d MB)</string>
+    <string name="DanygrammTranscribeAccurate">On device, accurate (%1$d MB)</string>
+    <string name="DanygrammTranscribeTelegram">Telegram servers (Premium)</string>
+    <string name="DanygrammTranscribeFastShort">on device, fast</string>
+    <string name="DanygrammTranscribeAccurateShort">on device, accurate</string>
+    <string name="DanygrammTranscribeTelegramShort">Telegram</string>
+    <string name="DanygrammTranscribeDelete">Delete downloaded models (%1$d MB)</string>
+    <string name="DanygrammTranscribeCpuUnsupported">This phone\'s processor does not support on-device transcription (ARMv8.2 with fp16 and dot product is required). Telegram\'s own transcription is used.</string>
+    <string name="DanygrammTranscribeDownloading">Downloading speech model: %1$d%% of %2$d MB…</string>
+    <string name="DanygrammTranscribeWorking">Recognizing speech on device…</string>
+    <string name="DanygrammTranscribeFailed">Could not transcribe this message.</string>
+    <string name="DanygrammTranscribeDownloadFailed">Could not download the speech model. Check the connection and free space, then try again.</string>
+    <string name="DanygrammTranscribeNoFile">The message has not been downloaded yet. Try again when it finishes loading.</string>
+</resources>

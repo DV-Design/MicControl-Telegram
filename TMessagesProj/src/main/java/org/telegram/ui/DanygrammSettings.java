@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
 import androidx.core.app.NotificationManagerCompat;
+import org.telegram.messenger.DanygrammTranscriber;
 import org.telegram.messenger.DanygrammUpdater;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationsService;
@@ -33,6 +34,7 @@ public final class DanygrammSettings {
                 text(R.string.DanygrammSystemNotifications) + ": " + (notifications ? on : off),
                 text(R.string.DanygrammIncomingCalls) + ": " + (fullScreen ? on : off),
                 text(R.string.DanygrammBattery) + ": " + (battery ? on : off),
+                text(R.string.DanygrammTranscribeTitle) + ": " + transcriptionModeName(DanygrammTranscriber.isCpuSupported() ? DanygrammTranscriber.getMode() : DanygrammTranscriber.MODE_TELEGRAM),
                 text(R.string.DanygrammCheckUpdates)
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -52,6 +54,9 @@ public final class DanygrammSettings {
                     }, 300);
                     return;
                 } else if (which == 4) {
+                    showTranscription(fragment);
+                    return;
+                } else if (which == 5) {
                     DanygrammUpdater.check(fragment, true);
                     return;
                 }
@@ -70,6 +75,44 @@ public final class DanygrammSettings {
                             .setPositiveButton(text(R.string.OK), null).create());
                 }
             }
+        });
+        builder.setNegativeButton(text(R.string.Close), null);
+        fragment.showDialog(builder.create());
+    }
+
+    private static String transcriptionModeName(int mode) {
+        if (mode == DanygrammTranscriber.MODE_ACCURATE) return text(R.string.DanygrammTranscribeAccurateShort);
+        if (mode == DanygrammTranscriber.MODE_FAST) return text(R.string.DanygrammTranscribeFastShort);
+        return text(R.string.DanygrammTranscribeTelegramShort);
+    }
+
+    private static void showTranscription(BaseFragment fragment) {
+        android.app.Activity activity = fragment.getParentActivity();
+        if (activity == null) return;
+        if (!DanygrammTranscriber.isCpuSupported()) {
+            fragment.showDialog(new AlertDialog.Builder(activity).setTitle(text(R.string.DanygrammTranscribeTitle))
+                    .setMessage(text(R.string.DanygrammTranscribeCpuUnsupported))
+                    .setPositiveButton(text(R.string.OK), null).create());
+            return;
+        }
+        int mode = DanygrammTranscriber.getMode();
+        String check = "\u2713 ";
+        long downloaded = DanygrammTranscriber.downloadedModelsBytes();
+        CharSequence[] items = {
+                (mode == DanygrammTranscriber.MODE_FAST ? check : "") + LocaleController.formatString(R.string.DanygrammTranscribeFast, DanygrammTranscriber.model(DanygrammTranscriber.MODE_FAST).sizeMb()),
+                (mode == DanygrammTranscriber.MODE_ACCURATE ? check : "") + LocaleController.formatString(R.string.DanygrammTranscribeAccurate, DanygrammTranscriber.model(DanygrammTranscriber.MODE_ACCURATE).sizeMb()),
+                (mode == DanygrammTranscriber.MODE_TELEGRAM ? check : "") + text(R.string.DanygrammTranscribeTelegram),
+                LocaleController.formatString(R.string.DanygrammTranscribeDelete, (int) Math.round(downloaded / 1048576.0))
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(text(R.string.DanygrammTranscribeTitle));
+        builder.setMessage(text(R.string.DanygrammTranscribeInfo));
+        builder.setItems(items, (dialog, which) -> {
+            if (which == 0) DanygrammTranscriber.setMode(DanygrammTranscriber.MODE_FAST);
+            else if (which == 1) DanygrammTranscriber.setMode(DanygrammTranscriber.MODE_ACCURATE);
+            else if (which == 2) DanygrammTranscriber.setMode(DanygrammTranscriber.MODE_TELEGRAM);
+            else DanygrammTranscriber.deleteModels();
+            org.telegram.messenger.AndroidUtilities.runOnUIThread(() -> showTranscription(fragment), 200);
         });
         builder.setNegativeButton(text(R.string.Close), null);
         fragment.showDialog(builder.create());
