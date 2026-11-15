@@ -2,16 +2,17 @@
 
 Собрал Danygramm на официальных исходниках Telegram Android 13.2.2 (7303), upstream commit `21f7d109da6ab3506c9e9577f98c6a38771ab335`. Это моя неофициальная сборка с настройками микрофона, локальным переводом переписки и расшифровкой голосовых на телефоне.
 
-Ветка `update-13.2.2` (версия `13.2.2-danygramm-1.3`) обновляет исходники с 13.0.2 до 13.2.2 и добавляет расшифровку голосовых. APK для неё ещё не опубликован; ниже ссылки на прошлые сборки на 13.0.2.
-
 ## Установка
 
-[Тестовая Danygramm 1.2.1](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.2.1/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2.1).
+[Тестовая Danygramm 1.3](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.3/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.3).
+
+В 1.3 исходники обновлены до Telegram 13.2.2 и добавлена [расшифровка голосовых на телефоне](#расшифровка-голосовых). Микрофон, перевод, карты и фоновая работа такие же, как в 1.2.1. Версия `13.2.2-danygramm-1.3`, code `73039`, SHA-256 `3170dc817a5a671549840a8c990c9c6a88b8955fe2936f37957d812f023c35a2`. APK собран в CI из `ccd76d0a`, ставится на эмулятор и открывает экран приветствия. Вход, звонки, карты и расшифровку в чате на телефоне ещё нужно проверить.
+
+[Предыдущая тестовая 1.2.1](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.2.1/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2.1).
 
 Собрал 1.2.1 на основе рабочей 1.2 с картами. В «Изоляции голоса» добавил срез верхних частот около 5 кГц, коэффициент RNNoise оставил 1,60. Имя версии `13.0.2-danygramm-1.2.1`, code `71829`. Качество звука в звонке ещё нужно проверить на телефоне: срез может сделать голос глуше и не гарантирует устранения обрывов на громком фоне. UI и приложение для этой проверки не запускал.
 
 [Предыдущая тестовая 1.2](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.2/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.2). В ней подключил карты; работу проверил на телефоне. Обработка микрофона в 1.2 такая же, как в 1.1. Её версия `13.0.2-danygramm-1.2`, code `71819`. UI-тесты для 1.1 и 1.2 не запускал.
-
 
 [Стабильная Danygramm 1.0](https://github.com/DV-Design/MicControl-Telegram/releases/download/danygramm-1.0/Danygramm-arm64.apk) · [Релиз и контрольная сумма](https://github.com/DV-Design/MicControl-Telegram/releases/tag/danygramm-1.0). Она остаётся в стабильном канале обновления. Версия `13.0.2-danygramm-1.0`, code `71799`.
 
